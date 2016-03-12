@@ -10,6 +10,8 @@ import serve from 'koa-static';
 import error from 'koa-json-error';
 import compress from 'koa-compress';
 import bodyparser from 'koa-bodyparser';
+import bunyan from 'bunyan';
+import bunyan_logger from 'koa-bunyan-logger';
 import bookshelf_joi_validator from 'bookshelf-joi-validator';
 
 export {Router};
@@ -36,7 +38,15 @@ export default class Koapi {
   }
 
   debug(on){
-    if (on) this.koa.use(logger());
+    if (on) {
+      this.koa.use(logger());
+      if (_.get(on, 'request')) {
+        let bunyan_opts = _.get(on, 'request.logger');
+        let bunyan_instance = bunyan_opts ? bunyan.createLogger(bunyan_opts) : null;
+        this.koa.use(bunyan_logger(bunyan_instance));
+        this.koa.use(bunyan_logger.requestLogger(_.get(on, 'request.options')));
+      }
+    }
 
     return this;
   }
@@ -115,6 +125,8 @@ export default class Koapi {
     this.compress(config.compress);
     this.routers(config.routers);
     this.listen(config.port);
+
+    return this;
   }
 }
 
