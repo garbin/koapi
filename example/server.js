@@ -3,9 +3,7 @@ import path from 'path';
 
 var app  = new Koapi({
   port:4000,
-  path:{
-    routers: __dirname + '/routers/**/*',
-  },
+  routers: __dirname + '/app/routers/**/*',
   knex: {
     client: 'mysql',
     connection: {

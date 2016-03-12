@@ -18,14 +18,14 @@ export default class Koapi {
     this.config = config;
     this.koa    = koa();
     this.initModel();
-    this.initRouter();
+    this.useRouter();
   }
   initModel(){
     Database.knex = require('knex')(this.config.knex);
     Database.bookshelf = require('bookshelf')(Database.knex);
   }
-  initRouter(){
-    glob.sync(this.config.path.routers).forEach((path)=>{
+  useRouter(){
+    glob.sync(this.config.routers || './app/routers/**/*').forEach((path)=>{
       let router = require(path).default;
       this.routers.push(router);
       this.koa.use(router.routes());
