@@ -16,4 +16,6 @@ var app  = new Koapi({
   }
 });
 
+app.router(__dirname + '/app/routers/**/*');
+
 app.run();

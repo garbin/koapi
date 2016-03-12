@@ -36,7 +36,7 @@ export default class Koapi {
   }
   run(cb){
     cb = cb || function(){
-      console.log("Server started at port " + this.config.port);
+      console.log("API Server now listening on port [" + this.config.port + "]");
     }.bind(this);
     this.koa.listen(this.config.port || 3000, cb);
   }
