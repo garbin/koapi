@@ -8,8 +8,8 @@ router.get('/posts', function*(){
 });
 
 router.get('/posts/:id', function*(){
-  var app = yield Post.where('id', '=', this.params.id).fetch();
-  this.body = app;
+  var post = yield Post.where('id', '=', this.params.id).fetch({'withRelated':'comments'});
+  this.body = post;
 });
 
 export default router;

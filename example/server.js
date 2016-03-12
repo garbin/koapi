@@ -18,5 +18,4 @@ var app  = new Koapi({
   }
 });
 
-
 app.run();
