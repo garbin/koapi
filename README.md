@@ -14,6 +14,11 @@ var app = new Koapi({
   }
 });
 
+// use koa middleware if you need
+// app.use(koa middleware)
+
+app.router();
+
 app.run();
 ```
 

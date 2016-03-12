@@ -18,15 +18,17 @@ export default class Koapi {
   constructor(config){
     this.config = config;
     this.koa    = koa();
-    this.initModel();
-    this.useRouter();
+    this.initDatabase();
   }
-  initModel(){
+  initDatabase(){
     Database.knex = require('knex')(this.config.knex);
     Database.bookshelf = require('bookshelf')(Database.knex);
   }
-  useRouter(){
-    glob.sync(this.config.routers || path.resolve('./app/routers/**/*')).forEach((path)=>{
+  use(mw){
+    return this.koa.use(mw);
+  }
+  router(routers){
+    glob.sync(routers || path.resolve('./app/routers/**/*')).forEach((path)=>{
       let router = require(path).default;
       this.routers.push(router);
       this.koa.use(router.routes());
@@ -40,6 +42,6 @@ export default class Koapi {
   }
 }
 
-export function Model(options){
-  return Database.bookshelf.Model.extend(options);
+export function Model(){
+  return Database.bookshelf.Model.extend.apply(Database.bookshelf.Model, Array.prototype.slice.apply(arguments));
 };
