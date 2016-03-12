@@ -7,7 +7,7 @@ RESTful API framework based on koa and bookshelf
 ## 1. server.js
 
 ```js
-import Koapi, {Router, Model} from './src/koapi';
+import Koapi, {Router} from './src/koapi';
 
 const app = new Koapi();
 
