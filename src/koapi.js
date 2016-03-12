@@ -1,6 +1,7 @@
 import koa from 'koa';
 import glob from 'glob';
 import Router from 'koa-router';
+import path from 'path';
 
 export {Router};
 
@@ -25,7 +26,7 @@ export default class Koapi {
     Database.bookshelf = require('bookshelf')(Database.knex);
   }
   useRouter(){
-    glob.sync(this.config.routers || './app/routers/**/*').forEach((path)=>{
+    glob.sync(this.config.routers || path.resolve('./app/routers/**/*')).forEach((path)=>{
       let router = require(path).default;
       this.routers.push(router);
       this.koa.use(router.routes());
