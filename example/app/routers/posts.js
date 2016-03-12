@@ -4,7 +4,14 @@ import Post from '../models/post';
 const posts = new Router();
 
   posts.get('/posts', function*(){
-    this.body = yield Post.fetchAll();
+    try {
+      a;
+      this.body = yield Post.fetchAll();
+    } catch (e) {
+      // console.log(e);
+      // this.body = e.message;
+      this.throw(e, 500);
+    }
   });
 
   posts.get('/posts/:id', function*(){

@@ -1,9 +1,9 @@
 import Koapi, {Model} from '../src/koapi';
 import path from 'path';
 
-var app  = new Koapi({
-  port:4000,
-  routers: __dirname + '/app/routers/**/*',
+var app  = new Koapi();
+app.debug();
+app.database({
   knex: {
     client: 'mysql',
     connection: {
@@ -16,6 +16,10 @@ var app  = new Koapi({
   }
 });
 
+app.cors();
+
+app.serve(__dirname + '/public');
+
 app.router(__dirname + '/app/routers/**/*');
 
-app.run();
+app.listen(4000);
