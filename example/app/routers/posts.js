@@ -15,7 +15,12 @@ const posts = new Router();
   });
 
   posts.get('/posts/:id', function*(){
-    var post = yield Post.where('id', '=', this.params.id).fetch({'withRelated':'comments'});
+    var post = yield Post.where({id: this.params.id}).fetch({'withRelated':'comments'});
+    this.body = post;
+  });
+
+  posts.post('/posts', function *() {
+    var post = yield new Post(this.request.body).save();
     this.body = post;
   });
 
