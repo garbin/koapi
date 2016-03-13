@@ -91,14 +91,12 @@ export default class Koapi {
 
   listen(port, cb){
     cb = cb || function(){
-      console.log("API Server now listening on port [" + port + "]");
+      port && console.log("API Server now listening on port [" + port + "]");
     }.bind(this);
-    this.koa.listen(port || 3000, cb);
+    return this.koa.listen(port || 3000, cb);
   }
 
-  run(config){
-    if (_.isString(config)) config = require(config);
-
+  setup(config){
     config = _.defaults(config, {
       port: 3000,
       bodyparser:{
@@ -114,7 +112,6 @@ export default class Koapi {
       routers: [],
       knex: false,
     });
-
     this.koa.use(error());
     this.bodyparser(config.bodyparser);
     this.bookshelf(config.knex);
@@ -124,9 +121,15 @@ export default class Koapi {
     this.serve(config.serve);
     this.compress(config.compress);
     this.routers(config.routers);
-    this.listen(config.port);
 
     return this;
+  }
+
+  run(config, cb){
+    if (_.isString(config)) config = require(config);
+    this.setup(config);
+
+    return this.listen(config.port, cb);
   }
 }
 
