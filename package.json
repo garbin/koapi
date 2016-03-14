@@ -1,6 +1,6 @@
 {
   "name": "koapi",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "RESTful API framework based on koajs",
   "main": "lib/koapi.js",
   "babel": {
@@ -9,8 +9,8 @@
       "stage-0"
     ]
   },
-  "bin":{
-    "koapi":"./bin/koapi.js"
+  "bin": {
+    "koapi": "./bin/koapi.js"
   },
   "scripts": {
     "compile": "babel --presets es2015,stage-0 -d lib/ src/",
