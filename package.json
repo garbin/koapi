@@ -9,6 +9,9 @@
       "stage-0"
     ]
   },
+  "bin":{
+    "koapi":"./bin/koapi.js"
+  },
   "scripts": {
     "compile": "babel --presets es2015,stage-0 -d lib/ src/",
     "prepublish": "npm run compile",
@@ -32,8 +35,10 @@
   },
   "homepage": "https://github.com/garbin/koapi#readme",
   "dependencies": {
+    "adm-zip": "^0.4.7",
     "bookshelf": "^0.9.2",
     "bookshelf-joi-validator": "^0.2.4",
+    "commander": "^2.9.0",
     "glob": "^7.0.3",
     "knex": "^0.10.0",
     "koa": "^1.2.0",
@@ -47,7 +52,9 @@
     "koa-router": "^5.4.0",
     "koa-static": "^2.0.0",
     "lodash": "^4.6.1",
-    "mysql": "^2.10.2"
+    "mysql": "^2.10.2",
+    "request": "^2.69.0",
+    "unzip": "^0.1.11"
   },
   "devDependencies": {
     "babel-cli": "^6.6.5",
