@@ -16,22 +16,43 @@ import bunyan_logger from 'koa-bunyan-logger';
 import bookshelf_joi_validator from 'bookshelf-joi-validator';
 import formidable from 'koa-formidable';
 
+const detect_duplicates_plugin = bookshelf => {
+  var Model = bookshelf.Model;
+  var DuplicateError = function (err) {
+    this.status = 409;
+    this.name = 'DuplicateError';
+    this.message = err.toString();
+    this.err = err;
+  };
+  DuplicateError.prototype = Error.prototype;
+  bookshelf.Model = Model.extend({
+    initialize: function () {
+      this.on('saving', this.validateDuplicates)
+    },
+    validateDuplicates: function (model, attrs, options) {
+      return new Promise((resolve, reject)=>{
+        if (this.unique && !_.isEmpty(_.pick(this.changed, this.unique))) {
+          this.constructor.where(_.pick(this.changed, this.unique)).fetch().then((exists)=>{
+            if (exists) {
+              reject(new DuplicateError('Duplicate'));
+            } else {
+              resolve();
+            }
+          }).catch(reject);
+        } else {
+          resolve();
+        }
+      });
+    }
+  });
+};
+
 var Bookshelf;
 
 
 export {Router, Bookshelf};
 
 
-// export Verb = {
-//   post: function (path, handler, validate) {
-//     return {
-//       method: 'POST',
-//       path: path,
-//       handler: handler,
-//       validate: validate,
-//     };
-//   }
-// };
 
 export default class Koapi {
   config = {}
@@ -46,6 +67,7 @@ export default class Koapi {
                                 .plugin('registry')
                                 .plugin('virtuals')
                                 .plugin('visibility')
+                                .plugin(detect_duplicates_plugin)
                                 .plugin(bookshelf_joi_validator);
   }
   bodyparser(options){
