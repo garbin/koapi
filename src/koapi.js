@@ -9,14 +9,29 @@ import throttle from 'koa-ratelimit';
 import serve from 'koa-static';
 import error from 'koa-json-error';
 import compress from 'koa-compress';
-import bodyparser from 'koa-bodyparser';
+import compose from 'koa-compose';
+import bodyparser from 'koa-better-body';
 import bunyan from 'bunyan';
 import bunyan_logger from 'koa-bunyan-logger';
 import bookshelf_joi_validator from 'bookshelf-joi-validator';
+import formidable from 'koa-formidable';
 
-export {Router};
+var Bookshelf;
 
-export var Bookshelf;
+
+export {Router, Bookshelf};
+
+
+// export Verb = {
+//   post: function (path, handler, validate) {
+//     return {
+//       method: 'POST',
+//       path: path,
+//       handler: handler,
+//       validate: validate,
+//     };
+//   }
+// };
 
 export default class Koapi {
   config = {}
@@ -74,6 +89,20 @@ export default class Koapi {
 
     return this;
   }
+  use(middleware){
+    if (middleware) {
+      if (_.isString(middleware)) {
+        var middlewares = require(middleware);
+        this.koa.use(_.isArray(middlewares) ? compose(middlewares) : middlewares);
+      } else {
+        Array.prototype.slice.call(arguments).forEach((middleware)=>{
+          this.koa.use(middleware);
+        });
+      }
+    }
+
+    return this;
+  }
 
   routers(routers){
     if (_.isString(routers)) {
@@ -101,7 +130,11 @@ export default class Koapi {
       port: 3000,
       bodyparser:{
         extendTypes: {
-          json: ['application/x-javascript', 'text/plain'] // will parse application/x-javascript type body as a JSON string
+          json: ['application/x-javascript', 'text/plain'], // will parse application/x-javascript type body as a JSON string
+        },
+        multipart: true,
+        formidable: {
+          multiples: true
         }
       },
       debug :true,
@@ -120,6 +153,7 @@ export default class Koapi {
     this.throttle(config.throttle);
     this.serve(config.serve);
     this.compress(config.compress);
+    this.use(config.middlewares);
     this.routers(config.routers);
 
     return this;
@@ -133,6 +167,6 @@ export default class Koapi {
   }
 }
 
-export function Model(){
-  return Bookshelf.Model.extend.apply(Bookshelf.Model, Array.prototype.slice.apply(arguments));
+export function Model(a, b){
+  return Bookshelf.Model.extend(a, b);
 };
