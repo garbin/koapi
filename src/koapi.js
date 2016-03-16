@@ -1,4 +1,5 @@
 import koa from 'koa';
+import fs from 'fs-extra';
 import glob from 'glob';
 import path from 'path';
 import _ from 'lodash';
@@ -177,8 +178,20 @@ export default class Koapi {
     this.compress(config.compress);
     this.use(config.middlewares);
     this.routers(config.routers);
+    this.error(config.error);
 
     return this;
+  }
+
+  error(options){
+    options = options || console.error;
+    this.koa.on('error', err => {
+      if (_.isString(options)) {
+        fs.outputJsonSync(options, {message:err.message, stack:err.stack, status:err.status, text:err.text});
+      } else {
+        options.call(this, err);
+      }
+    });
   }
 
   run(config, cb){
