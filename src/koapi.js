@@ -220,6 +220,9 @@ export const Model = {
     }
   },
   extend(protos, statics){
+    if (!Model.bookshelf) {
+      throw new Error('You should call Model.init before');
+    }
     return Model.bookshelf.Model.extend(protos, statics);
   }
 };
