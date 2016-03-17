@@ -17,43 +17,8 @@ import bunyan_logger from 'koa-bunyan-logger';
 import bookshelf_joi_validator from 'bookshelf-joi-validator';
 import formidable from 'koa-formidable';
 
-const detect_duplicates_plugin = bookshelf => {
-  var Model = bookshelf.Model;
-  var DuplicateError = function (err) {
-    this.status = 409;
-    this.name = 'DuplicateError';
-    this.message = err.toString();
-    this.err = err;
-  };
-  DuplicateError.prototype = Error.prototype;
-  bookshelf.Model = Model.extend({
-    initialize: function () {
-      this.on('saving', this.validateDuplicates)
-    },
-    validateDuplicates: function (model, attrs, options) {
-      return new Promise((resolve, reject)=>{
-        if (this.unique && !_.isEmpty(_.pick(this.changed, this.unique))) {
-          this.constructor.where(_.pick(this.changed, this.unique)).fetch().then((exists)=>{
-            if (exists) {
-              reject(new DuplicateError('Duplicate'));
-            } else {
-              resolve();
-            }
-          }).catch(reject);
-        } else {
-          resolve();
-        }
-      });
-    }
-  });
-};
 
-var Bookshelf;
-
-
-export {Router, Bookshelf};
-
-
+export {Router};
 
 export default class Koapi {
   config = {}
@@ -63,21 +28,15 @@ export default class Koapi {
     this.koa    = koa();
   }
 
-  bookshelf(options){
-    if (options) Bookshelf = require('bookshelf')(require('knex')(options))
-                                .plugin('registry')
-                                .plugin('virtuals')
-                                .plugin('visibility')
-                                .plugin(detect_duplicates_plugin)
-                                .plugin(bookshelf_joi_validator);
-  }
   bodyparser(options){
     if (options) this.koa.use(bodyparser(options));
   }
 
   debug(on){
     if (on) {
-      this.koa.use(logger());
+      if (on === true || _.get(on, 'console')) {
+        this.koa.use(logger());
+      }
       if (_.get(on, 'request')) {
         let bunyan_opts = _.get(on, 'request.logger');
         let bunyan_instance = bunyan_opts ? bunyan.createLogger(bunyan_opts) : null;
@@ -170,7 +129,6 @@ export default class Koapi {
     });
     this.koa.use(error());
     this.bodyparser(config.bodyparser);
-    this.bookshelf(config.knex);
     this.cors(config.cors);
     this.debug(config.debug);
     this.throttle(config.throttle);
@@ -202,6 +160,66 @@ export default class Koapi {
   }
 }
 
-export function Model(a, b){
-  return Bookshelf.Model.extend(a, b);
+export const Model = {
+  bookshelf:null,
+  init(knex_config) {
+    if (!Model.bookshelf) {
+      function koapi_base_model_plugin (bookshelf) {
+        var M = bookshelf.Model;
+        var DuplicateError = function (err) {
+          this.status = 409;
+          this.name = 'DuplicateError';
+          this.message = err.toString();
+          this.err = err;
+        };
+        DuplicateError.prototype = Error.prototype;
+        bookshelf.Model = M.extend({
+          jsonFields:[],
+          initialize: function () {
+            this.on('saving', this.validateDuplicates)
+          },
+          parse: function (attrs) {
+            if (Model.bookshelf.knex.client.config.client != 'pg' && this.jsonFields) {
+              this.jsonFields.forEach((f)=>{
+                attrs[f] = JSON.stringify(attrs[f]);
+              });
+            }
+            return attrs;
+          },
+          format: function (attrs) {
+            if (Model.bookshelf.knex.client.config.client != 'pg' && !_.isEmpty(this.jsonFields)) {
+              this.jsonFields.forEach((f)=>{
+                attrs[f] = JSON.stringify(attrs[f]);
+              });
+            }
+            return attrs;
+          },
+          validateDuplicates: function (model, attrs, options) {
+            return new Promise((resolve, reject)=>{
+              if (this.unique && !_.isEmpty(_.pick(this.changed, this.unique))) {
+                this.constructor.where(_.pick(this.changed, this.unique)).fetch().then((exists)=>{
+                  if (exists) {
+                    reject(new DuplicateError('Duplicate'));
+                  } else {
+                    resolve();
+                  }
+                }).catch(reject);
+              } else {
+                resolve();
+              }
+            });
+          }
+        });
+      };
+      Model.bookshelf = require('bookshelf')(require('knex')(knex_config))
+        .plugin('registry')
+        .plugin('virtuals')
+        .plugin('visibility')
+        .plugin(koapi_base_model_plugin)
+        .plugin(bookshelf_joi_validator);
+    }
+  },
+  extend(protos, statics){
+    return Model.bookshelf.Model.extend(protos, statics);
+  }
 };
