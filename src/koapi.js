@@ -202,7 +202,7 @@ export const Model = {
           parse: function (attrs) {
             if (Model.bookshelf.knex.client.config.client != 'pg' && !_.isEmpty(this.jsonFields)) {
               this.jsonFields.forEach((f)=>{
-                attrs[f] = JSON.parse(attrs[f]);
+                if (attrs[f]) attrs[f] = JSON.parse(attrs[f]);
               });
             }
             return attrs;
@@ -210,7 +210,7 @@ export const Model = {
           format: function (attrs) {
             if (Model.bookshelf.knex.client.config.client != 'pg' && !_.isEmpty(this.jsonFields)) {
               this.jsonFields.forEach((f)=>{
-                attrs[f] = JSON.stringify(attrs[f]);
+                if (attrs[f]) attrs[f] = JSON.stringify(attrs[f]);
               });
             }
             return attrs;
