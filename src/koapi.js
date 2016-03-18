@@ -87,17 +87,38 @@ export default class Koapi {
   }
 
   routers(routers){
+    var _routers = [];
     if (_.isString(routers)) {
       glob.sync(routers).forEach((path)=>{
-        let router = require(path).default;
+        let _router = require(path);
+        let router  = _router.default || _router;
+        _routers.push(router);
         this.koa.use(router.routes());
       });
     } else {
       routers.forEach((router)=>{
+        _routers.push(router);
         this.koa.use(router.routes());
       });
-      this.routers = routers;
     }
+
+    // show api specs
+    this.routers = _routers;
+    let _specs = new Router();
+    _specs.get('/_specs', function *() {
+      let specs = {};
+      _routers.forEach(router => {
+        router.stack.forEach(item => {
+          if (item.methods.length > 0) {
+            if (item.methods.length > 0) {
+              specs[item.path] = _.uniq((specs[item.path] || []).concat(item.methods));
+            }
+          }
+        });
+      });
+      this.body = specs;
+    });
+    this.koa.use(_specs.routes());
   }
 
   listen(port, cb){
