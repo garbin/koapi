@@ -200,9 +200,9 @@ export const Model = {
             this.on('saving', this.validateDuplicates)
           },
           parse: function (attrs) {
-            if (Model.bookshelf.knex.client.config.client != 'pg' && this.jsonFields) {
+            if (Model.bookshelf.knex.client.config.client != 'pg' && !_.isEmpty(this.jsonFields)) {
               this.jsonFields.forEach((f)=>{
-                attrs[f] = JSON.stringify(attrs[f]);
+                attrs[f] = JSON.parse(attrs[f]);
               });
             }
             return attrs;
