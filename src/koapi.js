@@ -200,7 +200,7 @@ export const Model = {
             this.on('saving', this.validateDuplicates)
           },
           parse: function (attrs) {
-            if (_.includes(['postgresql', 'pg'], Model.bookshelf.knex.client.config.client) && !_.isEmpty(this.jsonFields)) {
+            if (!_.includes(['postgresql', 'pg'], Model.bookshelf.knex.client.config.client) && !_.isEmpty(this.jsonFields)) {
               this.jsonFields.forEach((f)=>{
                 if (attrs[f]) attrs[f] = JSON.parse(attrs[f]);
               });
@@ -208,7 +208,7 @@ export const Model = {
             return attrs;
           },
           format: function (attrs) {
-            if (_.includes(['postgresql', 'pg'], Model.bookshelf.knex.client.config.client) && !_.isEmpty(this.jsonFields)) {
+            if (!_.includes(['postgresql', 'pg'], Model.bookshelf.knex.client.config.client) && !_.isEmpty(this.jsonFields)) {
               this.jsonFields.forEach((f)=>{
                 if (attrs[f]) attrs[f] = JSON.stringify(attrs[f]);
               });
