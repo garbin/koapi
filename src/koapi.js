@@ -5,6 +5,7 @@ import path from 'path';
 import _ from 'lodash';
 import Router from 'koa-router';
 import logger from 'koa-logger';
+import accesslog from 'koa-accesslog';
 import cors from 'koa-cors';
 import throttle from 'koa-ratelimit';
 import serve from 'koa-static';
@@ -33,17 +34,7 @@ export default class Koapi {
   }
 
   debug(on){
-    if (on) {
-      if (on === true || _.get(on, 'console')) {
-        this.koa.use(logger());
-      }
-      if (_.get(on, 'request')) {
-        let bunyan_opts = _.get(on, 'request.logger');
-        let bunyan_instance = bunyan_opts ? bunyan.createLogger(bunyan_opts) : null;
-        this.koa.use(bunyan_logger(bunyan_instance));
-        this.koa.use(bunyan_logger.requestLogger(_.get(on, 'request.options')));
-      }
-    }
+    if (on) this.koa.use(logger());
 
     return this;
   }
@@ -66,41 +57,34 @@ export default class Koapi {
     return this;
   }
 
+  accesslog(config){
+    var {options, request} = (config || {});
+    this.koa.use(bunyan_logger(options ? bunyan.createLogger(options): null));
+    this.koa.use(bunyan_logger.requestLogger(request));
+
+    return this;
+  }
+
   compress(options){
     if (options) this.koa.use(compress(options));
 
     return this;
   }
-  use(middleware){
-    if (middleware) {
-      if (_.isString(middleware)) {
-        var middlewares = require(middleware);
-        this.koa.use(_.isArray(middlewares) ? compose(middlewares) : middlewares);
-      } else {
-        Array.prototype.slice.call(arguments).forEach((middleware)=>{
-          this.koa.use(middleware);
-        });
-      }
+  use(middlewares){
+    if (!_.isArray(middlewares)) {
+      middlewares = Array.prototype.slice.call(arguments);
     }
+    this.koa.use(compose(middlewares));
 
     return this;
   }
 
   routers(routers){
     var _routers = [];
-    if (_.isString(routers)) {
-      glob.sync(routers).forEach((path)=>{
-        let _router = require(path);
-        let router  = _router.default || _router;
-        _routers.push(router);
-        this.koa.use(router.routes());
-      });
-    } else {
-      routers.forEach((router)=>{
-        _routers.push(router);
-        this.koa.use(router.routes());
-      });
-    }
+    routers.forEach((router)=>{
+      _routers.push(router);
+      this.koa.use(router.routes());
+    });
 
     // show api specs
     this.routers = _routers;
@@ -140,6 +124,17 @@ export default class Koapi {
           multiples: true
         }
       },
+      error: [{stream:process.stderr}],
+      accesslog: {
+        options:{
+          name:"access",
+          streams: [{
+            stream: process.stdout
+          }],
+        },
+        request:{},
+      },
+      middlewares:[],
       debug :true,
       cors  :true,
       throttle: false,
@@ -149,6 +144,7 @@ export default class Koapi {
       knex: false,
     });
     this.koa.use(error());
+    this.accesslog(config.accesslog);
     this.bodyparser(config.bodyparser);
     this.cors(config.cors);
     this.debug(config.debug);
@@ -162,14 +158,15 @@ export default class Koapi {
     return this;
   }
 
-  error(options){
-    options = options || console.error;
+  error(streams){
+    streams = streams || [{stream:process.stderr}];
+    var logger = bunyan.createLogger({
+      name:'error',
+      streams:streams,
+    });
+
     this.koa.on('error', err => {
-      if (_.isString(options)) {
-        fs.outputJsonSync(options, {message:err.message, stack:err.stack, status:err.status, text:err.text});
-      } else {
-        options.call(this, err);
-      }
+      logger.error(err);
     });
   }
 
