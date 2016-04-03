@@ -216,9 +216,13 @@ export const Model = {
             return new Promise((resolve, reject)=>{
               Promise.all(this.depends.map((depend)=>{
                 return new Promise((_resolve, _reject)=>{
-                  this.load(depend).then(()=>{
-                    this.related(depend).invokeThen('destroy').then(_resolve).catch(_reject);
-                  }).catch(_reject);
+                  if (this[depend]().relatedData.type == 'belongsToMany') {
+                    this[depend]().detach().then(_resolve).catch(_reject);
+                  } else {
+                    this.load(depend).then(()=>{
+                      this.related(depend).invokeThen('destroy').then(_resolve).catch(_reject);
+                    }).catch(_reject);
+                  }
                 });
               })).then(resolve).catch(reject);
             });
