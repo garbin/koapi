@@ -196,7 +196,7 @@ export const Model = {
           depends: [],
           initialize: function () {
             this.on('saving', this.validateDuplicates);
-            this.on('destorying', this.destroyDepends);
+            this.on('destroying', this.destroyDepends);
           },
           parse: function (attrs) {
             if (!_.includes(['postgresql', 'pg'], Model.bookshelf.knex.client.config.client) && !_.isEmpty(this.jsonFields)) {
