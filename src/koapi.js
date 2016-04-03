@@ -193,8 +193,10 @@ export const Model = {
         DuplicateError.prototype = Error.prototype;
         bookshelf.Model = M.extend({
           jsonFields:[],
+          depends: [],
           initialize: function () {
-            this.on('saving', this.validateDuplicates)
+            this.on('saving', this.validateDuplicates);
+            this.on('destorying', this.destroyDepends);
           },
           parse: function (attrs) {
             if (!_.includes(['postgresql', 'pg'], Model.bookshelf.knex.client.config.client) && !_.isEmpty(this.jsonFields)) {
@@ -211,6 +213,17 @@ export const Model = {
               });
             }
             return attrs;
+          },
+          destroyDepends(){
+            return new Promise((resolve, reject)=>{
+              Promise.all(this.depends.map((depend)=>{
+                return new Promise((_resolve, _reject)=>{
+                  this.load(depend).then(()=>{
+                    this.related(depend).invokeThen('destroy').then(_resolve).catch(_reject);
+                  }).catch(_reject);
+                });
+              })).then(resolve).catch(reject);
+            });
           },
           validateDuplicates: function (model, attrs, options) {
             return new Promise((resolve, reject)=>{
