@@ -120,6 +120,8 @@ export default class Koapi {
           json: ['application/x-javascript', 'text/plain'], // will parse application/x-javascript type body as a JSON string
         },
         multipart: true,
+        fieldsKey: false,
+        filesKey: false,
         formidable: {
           multiples: true
         }
