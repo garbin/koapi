@@ -8,7 +8,6 @@ import throttle from 'koa-ratelimit';
 import serve from 'koa-static';
 import error from 'koa-json-error';
 import compress from 'koa-compress';
-import compose from 'koa-compose';
 import bodyparser from 'koa-better-body';
 import bunyan from 'bunyan';
 import bunyan_logger from 'koa-bunyan-logger';
@@ -67,7 +66,10 @@ export default class Koapi {
     if (!_.isArray(middlewares)) {
       middlewares = Array.prototype.slice.call(arguments);
     }
-    this.koa.use(convert(compose(middlewares)));
+
+    middlewares.forEach(middleware => {
+      this.koa.use(middleware);
+    });
 
     return this;
   }
