@@ -9,9 +9,6 @@
       "stage-0"
     ]
   },
-  "bin": {
-    "koapi": "./bin/koapi.js"
-  },
   "scripts": {
     "compile": "babel --presets es2015,stage-0 -d lib/ src/",
     "prepublish": "npm run compile",
