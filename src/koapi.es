@@ -131,7 +131,7 @@ export default class Koapi {
         },
         request:{},
       },
-      middlewares:[],
+      middlewares:{before:[], after:[]},
       debug :true,
       cors  :true,
       throttle: false,
@@ -146,10 +146,11 @@ export default class Koapi {
     this.cors(config.cors);
     this.debug(config.debug);
     this.throttle(config.throttle);
-    this.serve(config.serve);
     this.compress(config.compress);
-    this.use(config.middlewares);
+    this.use(config.middlewares.before);
     this.routers(config.routers);
+    this.serve(config.serve);
+    this.use(config.middlewares.after);
     this.error(config.error);
 
     return this;
