@@ -149,8 +149,8 @@ export default class Koapi {
     this.compress(config.compress);
     this.use(config.middlewares.before);
     this.routers(config.routers);
-    this.serve(config.serve);
     this.use(config.middlewares.after);
+    this.serve(config.serve);
     this.error(config.error);
 
     return this;
