@@ -38,6 +38,7 @@
     "co-fs-extra": "^1.2.1",
     "commander": "^2.9.0",
     "glob": "^7.0.3",
+    "isipaddress": "0.0.2",
     "knex": "^0.10.0",
     "koa": "^2.0.0",
     "koa-accesslog": "0.0.2",
@@ -57,7 +58,9 @@
     "lodash": "^4.6.1",
     "mysql": "^2.10.2",
     "request": "^2.69.0",
-    "unzip": "^0.1.11"
+    "tldjs": "^1.6.2",
+    "unzip": "^0.1.11",
+    "wildcard": "^1.1.2"
   },
   "devDependencies": {
     "babel-cli": "^6.6.5",
