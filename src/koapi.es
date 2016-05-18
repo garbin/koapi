@@ -76,14 +76,11 @@ export default class Koapi {
 
   routers(routers){
     var _routers = [];
-    routers.forEach((router)=>{
-      if (router instanceof Router) {
-        _routers.push(router);
-        this.koa.use(router.routes());
-      } else {
-        _routers.push(router.router);
-        this.koa.use(router);
-      }
+    routers = _.map(routers, router => router instanceof Router ? router.routes() : router);
+    routers = _.sortBy(routers, router => router.index);
+    routers.forEach(router => {
+      _routers.push(router.router);
+      this.koa.use(router);
     });
 
     // show api specs

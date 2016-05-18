@@ -50,8 +50,9 @@ describe('use router', function(){
 describe('subdomain middleware', function(){
   let {server, app} = setup(app => {
     app.routers([
-      middlewares.subdomain('api.*', (new Router).get('/', ctx => ctx.body = 'api').routes()),
       (new Router).get('/', ctx => ctx.body = 'index').routes(),
+      middlewares.subdomain('api.*', (new Router).get('/', ctx => ctx.body = 'api').routes(), 1),
+      middlewares.subdomain('api.*', (new Router).get('/', ctx => ctx.body = 'haha api').routes(), 0),
     ]);
   });
   it('should get index', function(done){
@@ -64,7 +65,7 @@ describe('subdomain middleware', function(){
     request(server)
       .get('/')
       .set('Host', 'api.test.com')
-      .expect(res => res.text.should.be.equal('api'))
+      .expect(res => res.text.should.be.equal('haha api'))
       .expect(200, done);
   });
   it('should have _specs', function(done){
