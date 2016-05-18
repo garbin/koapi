@@ -31,7 +31,7 @@ export default class Koapi {
     return this;
   }
 
-  cors(options)(
+  cors(options) {
     if (options) this.koa.use(convert(cors(options)));
 
     return this;
