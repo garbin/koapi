@@ -14,9 +14,7 @@ export const subdomain = function(wc, middleware, index = 0){
     }
   }
   dispatch.index = index;
-  if (middleware.router instanceof Router) {
-    dispatch.router = middleware.router
-    dispatch.router.subdomain = wc;
-  }
+  dispatch.subdomain = wc;
+  dispatch.router = middleware.router;
   return dispatch;
 }

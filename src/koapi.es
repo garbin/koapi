@@ -76,11 +76,10 @@ export default class Koapi {
 
   routers(routers){
     var _routers = [];
-    routers = _.map(routers, router => router instanceof Router ? router.routes() : router);
-    routers = _.sortBy(routers, router => router.index);
     routers.forEach(router => {
-      _routers.push(router.router);
-      this.koa.use(router);
+      let _router = router instanceof Router ? router.routes() : router
+      _routers.push(_router);
+      this.koa.use(_router);
     });
 
     // show api specs
@@ -89,7 +88,7 @@ export default class Koapi {
     _specs.get('/_specs', async (ctx, next) => {
       let specs = {};
       _routers.forEach(router => {
-        router.stack.forEach(item => {
+        router.router.stack.forEach(item => {
           if (item.methods.length > 0) {
             if (item.methods.length > 0) {
               specs[router.subdomain ?
