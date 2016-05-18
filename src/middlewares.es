@@ -1,14 +1,21 @@
 import tld from 'tldjs'
 import wildcard from 'wildcard'
 import isIP from 'isipaddress'
+import Router from 'koa-router'
+import _ from 'lodash'
 
 export const subdomain = function(wc, middleware){
-  return async (ctx, next) => {
-    if (!isIP.test(this.hostname) && wildcard(wc, this.hostname)) {
-      this.subdomain = tld.getSubdomain(this.hostname);
-      await middleware.bind(this, ctx, next);
+  let dispatch = async (ctx, next) => {
+    if (!isIP.test(ctx.hostname) && wildcard(wc, ctx.hostname)) {
+      ctx.subdomain = tld.getSubdomain(ctx.hostname);
+      await middleware(ctx, next);
     } else {
-      await middleware()
+      await next();
     }
   }
+  if (middleware.router instanceof Router) {
+    dispatch.router = middleware.router
+    dispatch.router.subdomain = wc;
+  }
+  return dispatch;
 }

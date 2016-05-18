@@ -77,25 +77,33 @@ export default class Koapi {
   routers(routers){
     var _routers = [];
     routers.forEach((router)=>{
-      _routers.push(router);
-      this.koa.use(router.routes());
+      if (router instanceof Router) {
+        _routers.push(router);
+        this.koa.use(router.routes());
+      } else {
+        _routers.push(router.router);
+        this.koa.use(router);
+      }
     });
 
     // show api specs
     this.routers = _routers;
     let _specs = new Router();
-    _specs.get('/_specs', async () => {
+    _specs.get('/_specs', async (ctx, next) => {
       let specs = {};
       _routers.forEach(router => {
         router.stack.forEach(item => {
           if (item.methods.length > 0) {
             if (item.methods.length > 0) {
-              specs[item.path] = _.uniq((specs[item.path] || []).concat(item.methods));
+              specs[router.subdomain ?
+                      '://' + router.subdomain + item.path
+                        : item.path] =
+                            _.uniq((specs[item.path] || []).concat(item.methods));
             }
           }
         });
       });
-      this.body = specs;
+      ctx.body = specs;
     });
     this.koa.use(_specs.routes());
   }
@@ -104,7 +112,7 @@ export default class Koapi {
     cb = cb || function(){
       port && console.log("API Server now listening on port [" + port + "]");
     }.bind(this);
-    return this.koa.listen(port || 3000, cb);
+    return this.koa.listen(port, cb);
   }
 
   setup(config){
