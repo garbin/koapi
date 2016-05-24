@@ -73,6 +73,7 @@ const Model = {
         .plugin('registry')
         .plugin('virtuals')
         .plugin('visibility')
+        .plugin('pagination')
         .plugin(koapi_base_model_plugin)
         .plugin(bookshelf_joi_validator);
     }
