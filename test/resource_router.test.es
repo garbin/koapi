@@ -25,7 +25,11 @@ const setup = (config) => {
 describe('ResourceRouter', function(){
   let {server, app} = setup(app => {
     let rest_router = new ResourceRouter();
-    rest_router.resource(Post.collection());
+    rest_router.resource(Post.collection(), {
+      sortable: ['created_at'],
+      filterable: ['user_id'],
+      searchable: ['title']
+    });
     app.bodyparser({
         fieldsKey: false,
         filesKey: false,
@@ -39,6 +43,7 @@ describe('ResourceRouter', function(){
       .set('Accept', 'application/json')
       .expect(200)
       .expect(res => res.should.be.json())
+      .expect('Content-Range', 'items 0-0/1')
       .expect(res => res.body.length.should.be.equal(1))
       .then(res => done(null))
       .catch(done);
@@ -82,7 +87,7 @@ describe('ResourceRouter', function(){
       .catch(done);
   });
   it('put item', function(done){
-    let new_title = 'new title 1';
+    let new_title = 'search';
     request(server)
       .put('/posts/1')
       .set('Accept', 'application/json')
@@ -92,6 +97,36 @@ describe('ResourceRouter', function(){
       .expect(202)
       .expect(res => res.should.be.json())
       .expect(res => res.body.title.should.be.equal(new_title))
+      .then(res => done(null))
+      .catch(done);
+  });
+  it('#list sort', function(done){
+    request(server)
+      .get('/posts?sort=created_at')
+      .set('Accept', 'application/json')
+      .expect(200)
+      .expect(res => res.should.be.json())
+      .expect(res => res.body[0].id.should.be.equal(1))
+      .then(res => done(null))
+      .catch(done);
+  });
+  it('#list search', function(done){
+    request(server)
+      .get('/posts?q=doestnotexists')
+      .set('Accept', 'application/json')
+      .expect(200)
+      .expect(res => res.should.be.json())
+      .expect(res => res.body.should.be.empty())
+      .then(res => done(null))
+      .catch(done);
+  });
+  it('#list filter', function(done){
+    request(server)
+      .get('/posts?filters[user_id]=2')
+      .set('Accept', 'application/json')
+      .expect(200)
+      .expect(res => res.should.be.json())
+      .expect(res => res.body.should.be.empty())
       .then(res => done(null))
       .catch(done);
   });

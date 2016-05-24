@@ -1,5 +1,6 @@
 --compilers js:babel-core/register
 --compilers es:babel-core/register
 --require babel-polyfill
---require should 
+--require should
 --require should-http
+--reporter dot

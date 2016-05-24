@@ -18,7 +18,7 @@ export default class Koapi {
   koa    = null
 
   constructor(){
-    this.koa    = new Koa();
+    this.koa    = require('koa-qs')(new Koa());
   }
 
   bodyparser(options){

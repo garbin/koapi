@@ -3,13 +3,15 @@ import Model from './model'
 import paginate from 'koa-pagination'
 import convert from 'koa-convert'
 import _ from 'lodash'
-const debug = require('debug')('koapi');
 
 export default class ResourceRouter extends Router {
   resource(collection, options = {}){
     options = _.defaults(options, {
       root:null,
-      allow: ['list', 'get', 'post', 'put', 'patch', 'del'],
+      methods: ['list', 'get', 'post', 'put', 'patch', 'del'],
+      sortable: [],
+      searchable: [],
+      filterable: [],
       pagination:undefined,
       id:'id',
       fetch: {},
@@ -22,30 +24,6 @@ export default class ResourceRouter extends Router {
     let root = options.root;
     let item = root + '/:' + options.id;
 
-    // get list
-    this.get(root, convert(paginate(options.pagination)), async (ctx) => {
-      let resources = await collection(ctx).fetchPage(Object.assign({}, ctx.pagination, options.fetch));
-      ctx.body = resources.models;
-      ctx.length = resources.pagination.rowCount;
-    });
-
-    // get item
-    this.get(item, async (ctx) => {
-      let id = ctx.params[options.id];
-      ctx.body = await collection(ctx)
-                            .query(q => q.where({id}))
-                            .fetchOne(Object.assign({
-                              required: true,
-                            }, options.fetch));
-    });
-
-    // create
-    this.post(root, async (ctx) => {
-      let resource = collection(ctx).model.forge();
-      await resource.save(ctx.request.body);
-      ctx.body = resource;
-      ctx.status = 201;
-    });
 
     const update = async (ctx) => {
       let id = ctx.params[options.id];
@@ -55,16 +33,81 @@ export default class ResourceRouter extends Router {
       ctx.status = 202;
     }
 
-    // put/patch item
-    this.put(item, update);
-    this.patch(item, update);
+    const methods = {
+      list: () => {
+        // get list
+        this.get(root, convert(paginate(options.pagination)), async (ctx) => {
+          let query = collection(ctx).model.forge();
+          if (options.sortable) {
+            let order_by = _.get(ctx, 'request.query.sort', _.first(options.sortable));
+            if (_.includes(options.sortable, _.trimStart(order_by, '-'))) {
+              query = query.orderBy(order_by);
+            }
+          }
+          if (options.filterable) {
+            let filters = _.get(ctx, 'request.query.filters');
+            _.mapKeys(filters, (v, k) => {
+              query = query.query(q => q.where(k, '=', v));
+            });
+          }
+          if (options.searchable) {
+            let keywords = _.get(ctx, 'request.query.q');
+            if (keywords) {
+              query = query.query(q => {
+                options.searchable.forEach((field, index) => {
+                  q = q[index ? 'orWhere' : 'where'](field, 'LIKE', '%' + keywords + '%');
+                });
 
-    // delete item
-    this.del(item, async (ctx) => {
-      let id = ctx.params[options.id];
-      let resource = collection(ctx).model.forge({id});
-      await resource.destroy();
-      ctx.status = 204;
+                return q;
+              });
+            }
+          }
+          let resources = await query.fetchPage(Object.assign({}, ctx.pagination, options.fetch));
+
+          ctx.body = resources.models;
+          ctx.pagination.length = resources.pagination.rowCount;
+        });
+      },
+      get: () => {
+        // get item
+        this.get(item, async (ctx) => {
+          let id = ctx.params[options.id];
+          ctx.body = await collection(ctx)
+          .query(q => q.where({id}))
+          .fetchOne(Object.assign({
+            required: true,
+          }, options.fetch));
+        });
+      },
+      post: ()=>{
+        // create
+        this.post(root, async (ctx) => {
+          let resource = collection(ctx).model.forge();
+          await resource.save(ctx.request.body);
+          ctx.body = resource;
+          ctx.status = 201;
+        });
+      },
+      put: ()=>{
+        this.put(item, update);
+      },
+      patch: ()=>{
+        this.patch(item, update);
+      },
+
+      del: ()=>{
+        // delete item
+        this.del(item, async (ctx) => {
+          let id = ctx.params[options.id];
+          let resource = collection(ctx).model.forge({id});
+          await resource.destroy();
+          ctx.status = 204;
+        });
+      }
+    }
+
+    options.methods.forEach(method => {
+      methods[method]();
     });
 
     return this;
