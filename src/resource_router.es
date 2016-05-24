@@ -54,8 +54,10 @@ export default class ResourceRouter extends Router {
             let keywords = _.get(ctx, 'request.query.q');
             if (keywords) {
               query = query.query(q => {
-                options.searchable.forEach((field, index) => {
-                  q = q[index ? 'orWhere' : 'where'](field, 'LIKE', '%' + keywords + '%');
+                q = q.where(function(){
+                  options.searchable.forEach((field, index) => {
+                    this[index ? 'orWhere' : 'where'](field, 'LIKE', '%' + keywords + '%');
+                  });
                 });
 
                 return q;

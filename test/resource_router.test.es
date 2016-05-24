@@ -28,7 +28,7 @@ describe('ResourceRouter', function(){
     rest_router.resource(Post.collection(), {
       sortable: ['created_at'],
       filterable: ['user_id'],
-      searchable: ['title']
+      searchable: ['title', 'content']
     });
     app.bodyparser({
         fieldsKey: false,
@@ -123,6 +123,16 @@ describe('ResourceRouter', function(){
   it('#list filter', function(done){
     request(server)
       .get('/posts?filters[user_id]=2')
+      .set('Accept', 'application/json')
+      .expect(200)
+      .expect(res => res.should.be.json())
+      .expect(res => res.body.should.be.empty())
+      .then(res => done(null))
+      .catch(done);
+  });
+  it('#list filter & search', function(done){
+    request(server)
+      .get('/posts?filters[user_id]=2&q=doestnotexists')
       .set('Accept', 'application/json')
       .expect(200)
       .expect(res => res.should.be.json())
