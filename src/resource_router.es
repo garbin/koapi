@@ -66,5 +66,7 @@ export default class ResourceRouter extends Router {
       await resource.destroy();
       ctx.status = 204;
     });
+
+    return this;
   }
 }
