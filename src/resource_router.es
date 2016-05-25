@@ -24,7 +24,7 @@ export default class ResourceRouter extends Router {
     }
 
     let root = options.root || '/';
-    let item = root + '/:' + options.id;
+    let item = (options.root ? options.root : '') + '/:' + options.id;
 
     const update = async (ctx) => {
       let id = ctx.params[options.id];

@@ -1,7 +1,7 @@
 // Update with your config settings.
 
 exports.development = exports.production = exports.test = {
-  debug: true,
+  debug:false, 
   client: 'postgres',
   connection: {
     host     : 'ubuntu',

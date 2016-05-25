@@ -10,7 +10,7 @@ exports.up = function(knex, Promise) {
   }).createTable('comments', function(table) {
     table.increments('id').primary();
     table.string('title');
-    table.text('contents');
+    table.text('content');
     table.integer('user_id');
     table.integer('post_id');
     table.timestamp('created_at').notNullable().defaultTo(knex.raw('CURRENT_TIMESTAMP'));

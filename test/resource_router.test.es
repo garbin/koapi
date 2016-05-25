@@ -148,7 +148,15 @@ describe('ResourceRouter', function(){
       .set('Accept', 'application/json')
       .expect(200)
       .expect(res => res.should.be.json())
-      .expect(res => res.body.should.be.empty())
+      .then(res => done(null))
+      .catch(done);
+  });
+  it('nested #item', function(done){
+    request(server)
+      .get('/posts/1/comments/1')
+      .set('Accept', 'application/json')
+      .expect(200)
+      .expect(res => res.should.be.json())
       .then(res => done(null))
       .catch(done);
   });
