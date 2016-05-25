@@ -7,7 +7,7 @@ import _ from 'lodash'
 export default class ResourceRouter extends Router {
   resource(collection, options = {}){
     options = _.defaults(options, {
-      root:null,
+      root:'',
       methods: ['list', 'get', 'post', 'put', 'patch', 'del'],
       sortable: [],
       searchable: [],
@@ -16,14 +16,15 @@ export default class ResourceRouter extends Router {
       id:'id',
       fetch: {},
     });
+
     if (!_.isFunction(collection)) {
       options.root = options.root || '/' + collection.tableName();
       let _collection = collection;
       collection = ctx => _collection;
     }
-    let root = options.root;
-    let item = root + '/:' + options.id;
 
+    let root = options.root || '/';
+    let item = root + '/:' + options.id;
 
     const update = async (ctx) => {
       let id = ctx.params[options.id];
@@ -108,9 +109,7 @@ export default class ResourceRouter extends Router {
       }
     }
 
-    options.methods.forEach(method => {
-      methods[method]();
-    });
+    options.methods.forEach(method => methods[method]() );
 
     return this;
   }

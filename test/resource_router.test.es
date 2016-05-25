@@ -24,17 +24,19 @@ const setup = (config) => {
 
 describe('ResourceRouter', function(){
   let {server, app} = setup(app => {
-    let rest_router = new ResourceRouter();
-    rest_router.resource(Post.collection(), {
+    let posts = new ResourceRouter();
+    posts.resource(Post.collection(), {
       sortable: ['created_at'],
       filterable: ['user_id'],
       searchable: ['title', 'content']
     });
+    let comments = new ResourceRouter();
+    comments.resource(ctx => Comment.collection());
     app.bodyparser({
         fieldsKey: false,
         filesKey: false,
     });
-    app.routers( [ rest_router ] );
+    app.routers( [ posts, posts.use('/posts/:post_id/comments', comments.routes()) ] );
   });
 
   it('#list', function(done){
@@ -133,6 +135,16 @@ describe('ResourceRouter', function(){
   it('#list filter & search', function(done){
     request(server)
       .get('/posts?filters[user_id]=2&q=doestnotexists')
+      .set('Accept', 'application/json')
+      .expect(200)
+      .expect(res => res.should.be.json())
+      .expect(res => res.body.should.be.empty())
+      .then(res => done(null))
+      .catch(done);
+  });
+  it('nested #list', function(done){
+    request(server)
+      .get('/posts/1/comments')
       .set('Accept', 'application/json')
       .expect(200)
       .expect(res => res.should.be.json())
