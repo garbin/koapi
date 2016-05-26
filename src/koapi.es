@@ -1,18 +1,19 @@
-import Koa from 'koa';
-import _ from 'lodash';
-import Router from 'koa-router';
-import logger from 'koa-logger';
-import accesslog from 'koa-accesslog';
-import cors from 'koa-cors';
-import throttle from 'koa-ratelimit';
-import serve from 'koa-static';
-import error from 'koa-json-error';
-import compress from 'koa-compress';
-import bodyparser from 'koa-better-body';
-import bunyan from 'bunyan';
-import bunyan_logger from 'koa-bunyan-logger';
-import convert from 'koa-convert';
+import Koa from 'koa'
+import _ from 'lodash'
+import Router from 'koa-router'
+import logger from 'koa-logger'
+import accesslog from 'koa-accesslog'
+import cors from 'koa-cors'
+import throttle from 'koa-ratelimit'
+import serve from 'koa-static'
+import error from 'koa-json-error'
+import compress from 'koa-compress'
+import bodyparser from 'koa-better-body'
+import bunyan from 'bunyan'
+import bunyan_logger from 'koa-bunyan-logger'
+import convert from 'koa-convert'
 import morgan from 'koa-morgan'
+import fs from 'fs'
 
 export default class Koapi {
   config = {}
