@@ -12,6 +12,7 @@ import bodyparser from 'koa-better-body';
 import bunyan from 'bunyan';
 import bunyan_logger from 'koa-bunyan-logger';
 import convert from 'koa-convert';
+import morgan from 'koa-morgan'
 
 export default class Koapi {
   config = {}
@@ -50,11 +51,22 @@ export default class Koapi {
   }
 
   accesslog(config){
-    var {options, request} = (config || {});
-    this.koa.use(convert(bunyan_logger(options ? bunyan.createLogger(options): null)));
-    this.koa.use(convert(bunyan_logger.requestLogger(request)));
+    let stream = (_.isString(config.path) ?
+                    fs.createWriteStream(config.path, {flags:'a'})
+                      : null) || config.stream || process.stdout;
+    let format = config.format || 'combined';
+    let options = config.options || {};
+    this.koa.use(morgan(format, Object.assign({ stream }, options)));
+  }
 
-    return this;
+  errorlog(config){
+    let stream = (_.isString(config.path) ?
+                    fs.createWriteStream(config.path, {flags:'a'})
+                      : null) || config.stream || process.stderr;
+    let name = config.name || 'koapi-error';
+    var logger = bunyan.createLogger({ name, streams:[{stream}] });
+
+    this.koa.on('error', err =>  logger.error(err) );
   }
 
   compress(options){
@@ -62,6 +74,7 @@ export default class Koapi {
 
     return this;
   }
+
   use(middlewares){
     if (!_.isArray(middlewares)) {
       middlewares = Array.prototype.slice.call(arguments);
@@ -125,18 +138,18 @@ export default class Koapi {
           multiples: true
         }
       },
-      error: [{stream:process.stderr}],
-      accesslog: {
-        options:{
-          name:"access",
-          streams: [{
-            stream: process.stdout
-          }],
-        },
-        request:{},
+      accesslog:{
+        stream: process.stdout,
+        path: null,
+        format: 'combined',
+        options: {},
+      },
+      errorlog:{
+        stream: process.stderr,
+        path: null,
       },
       middlewares:{before:[], after:[]},
-      debug :true,
+      debug :false,
       cors  :true,
       throttle: false,
       serve: false,
@@ -146,6 +159,7 @@ export default class Koapi {
     });
     this.koa.use(convert(error()));
     this.accesslog(config.accesslog);
+    this.errorlog(config.errorlog);
     this.bodyparser(config.bodyparser);
     this.cors(config.cors);
     this.debug(config.debug);
@@ -155,22 +169,10 @@ export default class Koapi {
     this.routers(config.routers);
     this.use(config.middlewares.after);
     this.serve(config.serve);
-    this.error(config.error);
 
     return this;
   }
 
-  error(streams){
-    streams = streams || [{stream:process.stderr}];
-    var logger = bunyan.createLogger({
-      name:'error',
-      streams:streams,
-    });
-
-    this.koa.on('error', err => {
-      logger.error(err);
-    });
-  }
 
   run(config, cb){
     if (_.isString(config)) config = require(config);
