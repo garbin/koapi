@@ -5,6 +5,7 @@ import convert from 'koa-convert'
 import _ from 'lodash'
 
 export default class ResourceRouter extends Router {
+
   resource(collection, options = {}){
     options = _.defaults(options, {
       root:'',
@@ -15,7 +16,20 @@ export default class ResourceRouter extends Router {
       pagination:undefined,
       id:'id',
       fetch: {},
+      middleware:{
+        list: null,
+        get: null,
+        post: null,
+        patch: null,
+        del: null
+      },
+      created: null,
+      updated: null,
+      deleted: null,
     });
+
+    let default_middleware = async (ctx, next) => await next()
+    let default_hook       = async (ctx) => Promise.resolve(true)
 
     if (!_.isFunction(collection)) {
       options.root = options.root || '/' + collection.tableName();
@@ -27,16 +41,17 @@ export default class ResourceRouter extends Router {
     let item = (options.root ? options.root : '') + '/:' + options.id;
 
     const update = async (ctx) => {
-      let resource = (await collection(ctx).query(q => q.where({[options.id]:ctx.params[options.id]})).fetch({required:true})).first();
-      await resource.save(ctx.request.body, { patch: true });
-      ctx.body = resource;
+      ctx.resource = (await collection(ctx).query(q => q.where({[options.id]:ctx.params[options.id]})).fetch({required:true})).first();
+      await ctx.resource.save(ctx.request.body, { patch: true });
+      await (options.updated || default_hook)(ctx);
+      ctx.body = ctx.resource;
       ctx.status = 202;
     }
 
     const methods = {
       list: () => {
         // get list
-        this.get(root, convert(paginate(options.pagination)), async (ctx) => {
+        this.get(root, convert(paginate(options.pagination)), options.middleware.list || default_middleware, async (ctx) => {
           let query = collection(ctx).model.forge();
           if (options.sortable) {
             let order_by = _.get(ctx, 'request.query.sort', _.first(options.sortable));
@@ -72,7 +87,7 @@ export default class ResourceRouter extends Router {
       },
       get: () => {
         // get item
-        this.get(item, async (ctx) => {
+        this.get(item, options.middleware.get || default_middleware, async (ctx) => {
           ctx.body = await collection(ctx)
                             .query(q => q.where({[options.id]:ctx.params[options.id]}))
                             .fetchOne(Object.assign({
@@ -82,25 +97,27 @@ export default class ResourceRouter extends Router {
       },
       post: ()=>{
         // create
-        this.post(root, async (ctx) => {
-          let resource = collection(ctx).model.forge();
-          await resource.save(ctx.request.body);
-          ctx.body = resource;
+        this.post(root, options.middleware.post || default_middleware, async (ctx) => {
+          ctx.resource = collection(ctx).model.forge();
+          await ctx.resource.save(ctx.request.body);
+          await (options.created || default_hook)(ctx)
+          ctx.body = ctx.resource;
           ctx.status = 201;
         });
       },
       put: ()=>{
-        this.put(item, update);
+        this.put(item, options.middleware.patch || default_middleware, update);
       },
       patch: ()=>{
-        this.patch(item, update);
+        this.patch(item, options.middleware.patch || default_middleware, update);
       },
 
       del: ()=>{
         // delete item
-        this.del(item, async (ctx) => {
-          let resource = collection(ctx).model.forge({[options.id]:ctx.params[options.id]});
-          await resource.destroy();
+        this.del(item, options.middleware.del || default_middleware, async (ctx) => {
+          ctx.resource = collection(ctx).model.forge({[options.id]:ctx.params[options.id]});
+          await ctx.resource.destroy();
+          await (options.deleted || default_hook)(ctx);
           ctx.status = 204;
         });
       }
