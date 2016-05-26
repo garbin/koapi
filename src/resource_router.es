@@ -27,8 +27,7 @@ export default class ResourceRouter extends Router {
     let item = (options.root ? options.root : '') + '/:' + options.id;
 
     const update = async (ctx) => {
-      let id = ctx.params[options.id];
-      let resource = (await collection(ctx).query(q => q.where({id})).fetch({required:true})).first();
+      let resource = (await collection(ctx).query(q => q.where({[options.id]:ctx.params[options.id]})).fetch({required:true})).first();
       await resource.save(ctx.request.body, { patch: true });
       ctx.body = resource;
       ctx.status = 202;
@@ -74,12 +73,11 @@ export default class ResourceRouter extends Router {
       get: () => {
         // get item
         this.get(item, async (ctx) => {
-          let id = ctx.params[options.id];
           ctx.body = await collection(ctx)
-          .query(q => q.where({id}))
-          .fetchOne(Object.assign({
-            required: true,
-          }, options.fetch));
+                            .query(q => q.where({[options.id]:ctx.params[options.id]}))
+                            .fetchOne(Object.assign({
+                              required: true,
+                            }, options.fetch));
         });
       },
       post: ()=>{
@@ -101,8 +99,7 @@ export default class ResourceRouter extends Router {
       del: ()=>{
         // delete item
         this.del(item, async (ctx) => {
-          let id = ctx.params[options.id];
-          let resource = collection(ctx).model.forge({id});
+          let resource = collection(ctx).model.forge({[options.id]:ctx.params[options.id]});
           await resource.destroy();
           ctx.status = 204;
         });
