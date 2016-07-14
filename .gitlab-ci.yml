@@ -7,4 +7,4 @@ stages:
 build_job:
   stage: build
   script:
-    - npm run compile
+    - npm run compile && echo "haha"
