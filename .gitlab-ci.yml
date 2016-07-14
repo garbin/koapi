@@ -1,7 +1,10 @@
+before_script:
+  - npm install
+
 stages:
-- build
+  - build
 
 build_job:
   stage: build
   script:
-  - npm run compile
+    - npm run compile
