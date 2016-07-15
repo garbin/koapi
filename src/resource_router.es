@@ -29,15 +29,15 @@ export default class ResourceRouter extends Router {
 
   create(options, middleware){
     options = _.defaults(options, {
-      created: null,
+      after: null,
     });
     let {collection, options:{id}, pattern} = this;
     // create
     this.post(pattern.root, middleware || none, async (ctx) => {
       ctx.resource = collection(ctx).model.forge();
       await ctx.resource.save(ctx.request.body);
-      if (options.created) {
-        await options.created(ctx);
+      if (options.after) {
+        await options.after(ctx);
       }
       ctx.body = ctx.resource;
       ctx.status = 201;
@@ -100,13 +100,13 @@ export default class ResourceRouter extends Router {
   }
   update(options, middleware){
     options = _.defaults(options, {
-      updated: null,
+      after: null,
     });
     let {collection, options:{id}, pattern} = this;
     const update = async (ctx) => {
       ctx.resource = (await collection(ctx).query(q => q.where({[id]:ctx.params[id]})).fetch({required:true})).first();
       await ctx.resource.save(ctx.request.body, { patch: true });
-      if (options.updated)  await options.updated(ctx);
+      if (options.after)  await options.after(ctx);
       ctx.body = ctx.resource;
       ctx.status = 202;
     }
@@ -118,12 +118,12 @@ export default class ResourceRouter extends Router {
   dele(options, middleware){
     let {collection, pattern, options:{id}} = this;
     options = _.defaults(options, {
-      deleted: null,
+      after: null,
     });
     this.del(pattern.item, middleware || none, async (ctx) => {
       ctx.resource = collection(ctx).model.forge({[id]:ctx.params[id]});
       await ctx.resource.destroy();
-      if (options.deleted) await options.deleted(ctx);
+      if (options.after) await options.after(ctx);
       ctx.status = 204;
     });
     return this;
