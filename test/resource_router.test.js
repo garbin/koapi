@@ -25,14 +25,17 @@ const setup = (config) => {
 
 describe('ResourceRouter', it => {
   let {server, app} = setup(app => {
-    let posts = new ResourceRouter();
-    posts.resource(Post.collection(), {
+    let posts = new ResourceRouter(Post.collection());
+    posts.create();
+    posts.read({
       sortable: ['created_at'],
       filterable: ['user_id'],
       searchable: ['title', 'content']
     });
-    let comments = new ResourceRouter();
-    comments.resource(ctx => Comment.collection());
+    posts.update();
+    posts.dele();
+    let comments = new ResourceRouter(ctx => Comment.collection());
+    comments.crud();
     app.bodyparser({
         fieldsKey: false,
         filesKey: false,
