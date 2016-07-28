@@ -33,7 +33,7 @@ describe('ResourceRouter', it => {
       searchable: ['title', 'content']
     });
     posts.update();
-    posts.dele();
+    posts.destroy();
     let comments = new ResourceRouter(ctx => Comment.collection());
     comments.crud();
     app.bodyparser({

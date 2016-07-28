@@ -115,7 +115,7 @@ export default class ResourceRouter extends Router {
 
     return this;
   }
-  dele(options, middleware){
+  destroy(options, middleware){
     let {collection, pattern, options:{id}} = this;
     options = _.defaults(options, {
       after: null,
@@ -129,6 +129,6 @@ export default class ResourceRouter extends Router {
     return this;
   }
   crud(){
-    return this.create().read().update().dele();
+    return this.create().read().update().destroy();
   }
 }
