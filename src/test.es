@@ -56,8 +56,7 @@ export const ResourceTester = class  {
     .set('Accept', 'application/json')
     .send(resource));
     tester.expect(res => {
-      expect(res).to.have.status(201);
-      expect(res.body.id).to.be.a('number')
+      expect(res).to.have.status(201)
     });
 
     return tester;
