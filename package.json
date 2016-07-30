@@ -58,8 +58,11 @@
   },
   "homepage": "https://github.com/garbin/koapi#readme",
   "dependencies": {
+    "ava": "^0.15.2",
     "bookshelf": "^0.9.5",
     "bookshelf-joi-validator": "^0.2.4",
+    "chai": "^3.5.0",
+    "chai-http": "^3.0.0",
     "glob": "^7.0.3",
     "isipaddress": "0.0.2",
     "knex": "^0.10.0",
