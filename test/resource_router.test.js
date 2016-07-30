@@ -1,5 +1,5 @@
 import Koapi, {Model, ResourceRouter} from '../src'
-import {suite, ResourceTester, expect} from '../src/test'
+import {suite} from '../src/test'
 import knex_config from './knex/knexfile'
 
 Model.init(knex_config.test);
@@ -43,7 +43,7 @@ let {server, app} = setup(app => {
 
 
 
-suite(function(){
+suite(({ResourceTester, expect})=>{
   let tester = new ResourceTester(server, '/posts');
   tester.create({ title: 'title', content: 'content'}).test();
   tester.read(1).test();
@@ -59,7 +59,7 @@ suite(function(){
   });
 });
 
-suite(function(){
+suite(({ResourceTester, expect})=>{
   let tester = new ResourceTester(server, '/posts/1/comments');
   tester.read(1).test();
   tester.read().test();

@@ -9,7 +9,7 @@ chai.use(require('chai-http'));
 export const request = chai.request;
 export {test, expect}
 export const suite = (cb) => {
-  return cb(ResourceTester, test, expect);
+  return cb({ResourceTester, test, expect, request});
 };
 
 export const HttpTester = class  {
