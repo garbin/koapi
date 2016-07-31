@@ -64,6 +64,11 @@ export const ResourceTester = class  {
     return tester;
   }
   read(id, query = '', reqcb = ch => ch){
+    if (_.isFunction(id)) {
+      reqcb = id;
+      id = null;
+      query = '';
+    }
     query = _.isString(query) ? query : qs.stringify(query);
     let path = this.endpoint + (id ? '/' + id : '') + (query ? '?' + query : '');
     let tester = new HttpTester(this.server);
@@ -77,6 +82,10 @@ export const ResourceTester = class  {
     return tester;
   }
   update(id, data, query, reqcb = ch => ch){
+    if (_.isFunction(query)) {
+      query = '';
+      reqcb = query;
+    }
     let path = this.endpoint + (id ? '/' + id : '') + (query ? '?' + query : '');
     let tester = new HttpTester(this.server);
     tester.title(`PATCH ${path}`);
@@ -93,6 +102,10 @@ export const ResourceTester = class  {
     return tester;
   }
   destroy(id, query, reqcb = ch => ch){
+    if (_.isFunction(query)) {
+      query = '';
+      reqcb = query;
+    }
     let path = this.endpoint + (id ? '/' + id : '') + (query ? '?' + query : '');
     let tester = new HttpTester(this.server);
     tester.title(`DELETE ${path}`);
