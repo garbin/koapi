@@ -58,9 +58,10 @@ export const ResourceTester = class  {
   create(resource, reqcb = ch => ch){
     let tester = new HttpTester(this.server);
     tester.title(`POST ${this.endpoint}`);
-    tester.req(req => reqcb(req.post(this.endpoint)
-                               .set('Accept', 'application/json'))
-                           .send(resource));
+    tester.req(req => {
+      req = reqcb(req.post(this.endpoint).set('Accept', 'application/json'));
+      return _.isFunction(resource) ? resource(req) : req.send(resource);
+    });
 
     tester.expect(res => {
       expect(res).to.have.status(201)
@@ -97,9 +98,10 @@ export const ResourceTester = class  {
     let path = this.endpoint + (id ? '/' + id : '') + (query ? '?' + query : '');
     let tester = new HttpTester(this.server);
     tester.title(`PATCH ${path}`);
-    tester.req(req =>
-      reqcb(req.patch(path).set('Accept', 'application/json')).send(data)
-    );
+    tester.req(req => {
+      req = reqcb(req.patch(path).set('Accept', 'application/json'));
+      return _.isFunction(data) ? data(req) : req.send(data);
+    });
     tester.expect(res => {
       expect(res).to.have.status(202);
       _.forIn(data, (v, k)=>{
