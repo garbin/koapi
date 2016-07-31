@@ -17,7 +17,8 @@ export const HttpTester = class  {
   promise = null;
   config = {
     title:'',
-    expect: function(){}
+    expect: function(res){return res;},
+    cth: function(e){return e;}
   };
   constructor(server) {
     this.request = request(server);
@@ -28,6 +29,10 @@ export const HttpTester = class  {
   }
   title(title){
     this.config.title = title;
+    return this;
+  }
+  catch(cth){
+    this.config.catch = cth;
     return this;
   }
   expect(cb){
@@ -41,7 +46,7 @@ export const HttpTester = class  {
       cb(res);
       return res;
       // return cb(res);
-    })))
+    })).catch(this.config.catch))
   }
 }
 

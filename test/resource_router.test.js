@@ -47,6 +47,7 @@ suite(({ResourceTester, expect})=>{
   let tester = new ResourceTester(server, '/posts');
   tester.create({ title: 'title', content: 'content'}, req => req.set('X-Header', 'haha')).test();
   tester.read(req => req.set('X-Header', 'haha')).test();
+  tester.read(100).catch(e => expect(e.actual).equals(204)).test();
   tester.read(1, req => req.set('X-Header', 'haha')).test();
   tester.update(1, {title: 'new title'}).test();
   tester.destroy(2).test();
