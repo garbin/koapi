@@ -68,6 +68,9 @@ export const ResourceTester = class  {
       reqcb = id;
       id = null;
       query = '';
+    } else if (_.isFunction(query)) {
+      reqcb = query;
+      query = '';
     }
     query = _.isString(query) ? query : qs.stringify(query);
     let path = this.endpoint + (id ? '/' + id : '') + (query ? '?' + query : '');
@@ -83,8 +86,8 @@ export const ResourceTester = class  {
   }
   update(id, data, query, reqcb = ch => ch){
     if (_.isFunction(query)) {
-      query = '';
       reqcb = query;
+      query = '';
     }
     let path = this.endpoint + (id ? '/' + id : '') + (query ? '?' + query : '');
     let tester = new HttpTester(this.server);
@@ -103,8 +106,8 @@ export const ResourceTester = class  {
   }
   destroy(id, query, reqcb = ch => ch){
     if (_.isFunction(query)) {
-      query = '';
       reqcb = query;
+      query = '';
     }
     let path = this.endpoint + (id ? '/' + id : '') + (query ? '?' + query : '');
     let tester = new HttpTester(this.server);
