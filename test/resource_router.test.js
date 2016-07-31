@@ -1,5 +1,5 @@
 import Koapi, {Model, ResourceRouter} from '../src'
-import {suite} from '../src/test'
+import suite from '../src/test'
 import knex_config from './knex/knexfile'
 
 Model.init(knex_config.test);
@@ -40,7 +40,6 @@ let {server, app} = setup(app => {
   });
   app.routers( [ posts, posts.use('/posts/:post_id/comments', comments.routes()) ] );
 });
-
 
 
 suite(({ResourceTester, expect})=>{

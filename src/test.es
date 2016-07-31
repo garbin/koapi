@@ -3,14 +3,14 @@ import _ from 'lodash'
 import qs from 'qs'
 import test from 'ava'
 import {expect} from 'chai'
-
 chai.use(require('chai-http'));
+
+export default (cb) => {
+  return cb({ResourceTester, test, expect, request});
+};
 
 export const request = chai.request;
 export {test, expect}
-export const suite = (cb) => {
-  return cb({ResourceTester, test, expect, request});
-};
 
 export const HttpTester = class  {
   request = null;
