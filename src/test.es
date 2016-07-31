@@ -50,24 +50,25 @@ export const ResourceTester = class  {
     this.endpoint = endpoint;
     this.server   = server;
   }
-  create(resource){
+  create(resource, reqcb = ch => ch){
     let tester = new HttpTester(this.server);
     tester.title(`POST ${this.endpoint}`);
-    tester.req(req => req.post(this.endpoint)
-    .set('Accept', 'application/json')
-    .send(resource));
+    tester.req(req => reqcb(req.post(this.endpoint)
+                               .set('Accept', 'application/json'))
+                           .send(resource));
+
     tester.expect(res => {
       expect(res).to.have.status(201)
     });
 
     return tester;
   }
-  read(id, query = ''){
+  read(id, query = '', reqcb = ch => ch){
     query = _.isString(query) ? query : qs.stringify(query);
     let path = this.endpoint + (id ? '/' + id : '') + (query ? '?' + query : '');
     let tester = new HttpTester(this.server);
     tester.title(`GET ${path}`);
-    tester.req(req => req.get(path).set('Accept', 'application/json'));
+    tester.req(req => reqcb(req.get(path).set('Accept', 'application/json')));
     tester.expect(res => {
       expect(res).to.have.status(200);
       if (!id) expect(res.body).to.be.an('array');
@@ -75,11 +76,13 @@ export const ResourceTester = class  {
 
     return tester;
   }
-  update(id, data, query){
+  update(id, data, query, reqcb = ch => ch){
     let path = this.endpoint + (id ? '/' + id : '') + (query ? '?' + query : '');
     let tester = new HttpTester(this.server);
     tester.title(`PATCH ${path}`);
-    tester.req(req => req.patch(path).set('Accept', 'application/json').send(data));
+    tester.req(req =>
+      reqcb(req.patch(path).set('Accept', 'application/json')).send(data)
+    );
     tester.expect(res => {
       expect(res).to.have.status(202);
       _.forIn(data, (v, k)=>{
@@ -89,11 +92,12 @@ export const ResourceTester = class  {
 
     return tester;
   }
-  destroy(id, query){
+  destroy(id, query, reqcb = ch => ch){
     let path = this.endpoint + (id ? '/' + id : '') + (query ? '?' + query : '');
     let tester = new HttpTester(this.server);
     tester.title(`DELETE ${path}`);
-    tester.req(req => req.del(path).set('Accept', 'application/json'));
+    tester.req(req =>
+      reqcb(req.del(path).set('Accept', 'application/json')));
     tester.expect(res => {
       expect(res).to.have.status(204)
     });
