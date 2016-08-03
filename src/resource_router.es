@@ -17,8 +17,7 @@ export default class ResourceRouter extends Router {
     this.collection = collection;
     if (!_.isFunction(collection)) {
       options.root = options.root || '/' + collection.tableName();
-      let _collection = collection;
-      this.collection = ctx => _collection;
+      this.collection = ctx => collection;
     }
 
     this.pattern = {
@@ -34,12 +33,16 @@ export default class ResourceRouter extends Router {
     let {collection, options:{id}, pattern} = this;
     // create
     this.post(pattern.root, middleware || none, async (ctx) => {
-      ctx.resource = collection(ctx).model.forge();
-      await ctx.resource.save(ctx.request.body);
+      if (collection(ctx).relatedData) {
+        ctx.state.resource = await collection(ctx).create(ctx.request.body);
+      } else {
+        ctx.state.resource = collection(ctx).model.forge();
+        await ctx.state.resource.save(ctx.request.body);
+      }
       if (options.after) {
         await options.after(ctx);
       }
-      ctx.body = ctx.resource;
+      ctx.body = ctx.state.resource;
       ctx.status = 201;
     });
     return this;
@@ -56,7 +59,11 @@ export default class ResourceRouter extends Router {
     let {collection, options:{id}, pattern} = this;
     // read list
     this.get(pattern.root, convert(paginate(options.pagination)), middleware || none, async (ctx) => {
+      // console.log(collection(ctx).relatedData);
       let query = collection(ctx).model.forge();
+      if (collection(ctx).relatedData) {
+        query = query.where({[collection(ctx).relatedData.key('foreignKey')]:collection(ctx).relatedData.parentId})
+      }
       if (options.sortable) {
         let order_by = _.get(ctx, 'request.query.sort', _.first(options.sortable));
         if (_.includes(options.sortable, _.trimStart(order_by, '-'))) {
