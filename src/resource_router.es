@@ -128,7 +128,10 @@ export default class ResourceRouter extends Router {
       after: null,
     });
     this.del(pattern.item, middleware || none, async (ctx) => {
-      ctx.state.resource = collection(ctx).model.forge({[id]:ctx.params[id]});
+      ctx.state.resource = await collection(ctx).query(q => q.where({[id]:ctx.params[id]})).fetchOne({require:true});
+      // ctx.state.resource = await collection(ctx).model.forge().where({[id]:ctx.params[id]});
+
+      // ctx.state.resource = collection(ctx).model.forge({[id]:ctx.params[id]});
       await ctx.state.resource.destroy();
       if (options.after) await options.after(ctx);
       ctx.status = 204;
