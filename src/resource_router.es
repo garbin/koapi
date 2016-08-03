@@ -111,10 +111,10 @@ export default class ResourceRouter extends Router {
     });
     let {collection, options:{id}, pattern} = this;
     const update = async (ctx) => {
-      ctx.resource = (await collection(ctx).query(q => q.where({[id]:ctx.params[id]})).fetch({required:true})).first();
-      await ctx.resource.save(ctx.request.body, { patch: true });
+      ctx.state.resource = (await collection(ctx).query(q => q.where({[id]:ctx.params[id]})).fetch({required:true})).first();
+      await ctx.state.resource.save(ctx.request.body, { patch: true });
       if (options.after)  await options.after(ctx);
-      ctx.body = ctx.resource;
+      ctx.body = ctx.state.resource;
       ctx.status = 202;
     }
     this.put(pattern.item, middleware || none, update);
@@ -128,8 +128,8 @@ export default class ResourceRouter extends Router {
       after: null,
     });
     this.del(pattern.item, middleware || none, async (ctx) => {
-      ctx.resource = collection(ctx).model.forge({[id]:ctx.params[id]});
-      await ctx.resource.destroy();
+      ctx.state.resource = collection(ctx).model.forge({[id]:ctx.params[id]});
+      await ctx.state.resource.destroy();
       if (options.after) await options.after(ctx);
       ctx.status = 204;
     });
