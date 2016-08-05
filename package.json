@@ -63,7 +63,6 @@
     "bookshelf-joi-validator": "^0.2.4",
     "chai": "^3.5.0",
     "chai-http": "^3.0.0",
-    "glob": "^7.0.3",
     "isipaddress": "0.0.2",
     "knex": "^0.10.0",
     "koa": "^2.0.0",
@@ -85,10 +84,11 @@
     "koa-router": "^7.0.1",
     "koa-static": "^2.0.0",
     "lodash": "^4.6.1",
+    "moment": "^2.14.1",
     "mysql": "^2.10.2",
     "tldjs": "^1.6.2",
-    "unzip": "^0.1.11",
-    "wildcard": "^1.1.2"
+    "wildcard": "^1.1.2",
+    "winston": "^2.2.0"
   },
   "devDependencies": {
     "ava": "^0.15.1",

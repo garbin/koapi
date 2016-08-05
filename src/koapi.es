@@ -2,25 +2,27 @@ import Koa from 'koa'
 import _ from 'lodash'
 import Router from 'koa-router'
 import logger from 'koa-logger'
-import accesslog from 'koa-accesslog'
 import cors from 'koa-cors'
 import throttle from 'koa-ratelimit'
 import serve from 'koa-static'
 import error from 'koa-json-error'
 import compress from 'koa-compress'
 import bodyparser from 'koa-better-body'
-import bunyan from 'bunyan'
-import bunyan_logger from 'koa-bunyan-logger'
 import convert from 'koa-convert'
 import morgan from 'koa-morgan'
+import winston from 'winston'
+import moment from 'moment'
 import fs from 'fs'
 
 export default class Koapi {
   config = {}
+  logger = null
   koa    = null
 
   constructor(){
     this.koa    = require('koa-qs')(new Koa());
+    this.logger = winston;
+    this.koa.on('error', err => this.logger.error(err));
   }
 
   bodyparser(options){
@@ -58,16 +60,6 @@ export default class Koapi {
     let format = config.format || 'combined';
     let options = config.options || {};
     this.koa.use(morgan(format, Object.assign({ stream }, options)));
-  }
-
-  errorlog(config){
-    let stream = (_.isString(config.path) ?
-                    fs.createWriteStream(config.path, {flags:'a'})
-                      : null) || config.stream || process.stderr;
-    let name = config.name || 'koapi-error';
-    var logger = bunyan.createLogger({ name, streams:[{stream}] });
-
-    this.koa.on('error', err =>  logger.error(err) );
   }
 
   compress(options){
@@ -119,9 +111,13 @@ export default class Koapi {
   }
 
   listen(port, cb){
-    cb = cb || function(){
-      port && console.log("API Server now listening on port [" + port + "]");
-    }.bind(this);
+    if (_.isFunction(port)) {
+      cb = port;
+      port = this.config.port || null;
+    } else {
+      port = port || this.config.port;
+      cb = cb || function(){};
+    }
     return this.koa.listen(port, cb);
   }
 
@@ -145,25 +141,18 @@ export default class Koapi {
         format: 'combined',
         options: {},
       },
-      errorlog:{
-        stream: process.stderr,
-        path: null,
-      },
       middlewares:{before:[], after:[]},
-      debug :false,
       cors  :true,
       throttle: false,
       serve: false,
       compress: false,
       routers: [],
-      knex: false,
     });
     this.koa.use(convert(error()));
     this.accesslog(config.accesslog);
-    this.errorlog(config.errorlog);
     this.bodyparser(config.bodyparser);
     this.cors(config.cors);
-    this.debug(config.debug);
+    this.debug(process.env.DEBUG);
     this.throttle(config.throttle);
     this.compress(config.compress);
     this.use(config.middlewares.before);
@@ -172,13 +161,5 @@ export default class Koapi {
     this.serve(config.serve);
 
     return this;
-  }
-
-
-  run(config, cb){
-    if (_.isString(config)) config = require(config);
-    this.setup(config);
-
-    return this.listen(config.port, cb);
   }
 }
