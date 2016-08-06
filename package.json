@@ -20,9 +20,7 @@
     ],
     "require": [
       "babel-register",
-      "babel-polyfill",
-      "should",
-      "should-http"
+      "babel-polyfill"
     ],
     "babel": "inherit"
   },
@@ -69,8 +67,7 @@
     "koa-accesslog": "0.0.2",
     "koa-better-body": "^1.0.17",
     "koa-bodyparser": "^2.0.1",
-    "koa-bunyan-logger": "^1.3.0",
-    "koa-compose": "^2.4.0",
+    "koa-compose": "^3.1.0",
     "koa-compress": "^1.0.9",
     "koa-convert": "^1.2.0",
     "koa-cors": "0.0.16",
@@ -92,7 +89,6 @@
   },
   "devDependencies": {
     "ava": "^0.15.1",
-    "ava-spec": "^1.0.0",
     "babel-cli": "^6.6.5",
     "babel-core": "^6.9.0",
     "babel-polyfill": "^6.9.0",
@@ -100,9 +96,6 @@
     "babel-preset-stage-0": "^6.5.0",
     "nodemon": "^1.9.1",
     "nyc": "^6.4.4",
-    "pg": "^4.5.5",
-    "should": "^8.3.1",
-    "should-http": "0.0.4",
-    "supertest-as-promised": "^3.1.0"
+    "pg": "^4.5.5"
   }
 }
