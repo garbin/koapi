@@ -1,7 +1,7 @@
 import Koa from 'koa'
 import _ from 'lodash'
 import Router from 'koa-router'
-import logger from 'koa-logger'
+import koa_logger from 'koa-logger'
 import cors from 'koa-cors'
 import throttle from 'koa-ratelimit'
 import serve from 'koa-static'
@@ -10,19 +10,16 @@ import compress from 'koa-compress'
 import bodyparser from 'koa-better-body'
 import convert from 'koa-convert'
 import morgan from 'koa-morgan'
-import winston from 'winston'
-import moment from 'moment'
+import logger from './logger'
 import fs from 'fs'
 
 export default class Koapi {
   config = {}
-  logger = null
   koa    = null
 
   constructor(){
     this.koa    = require('koa-qs')(new Koa());
-    this.logger = winston;
-    this.koa.on('error', err => this.logger.error(err));
+    this.koa.on('error', err => logger.error(err));
   }
 
   bodyparser(options){
@@ -30,7 +27,7 @@ export default class Koapi {
   }
 
   debug(on){
-    if (on) this.koa.use(convert(logger()));
+    if (on) this.koa.use(convert(koa_logger()));
 
     return this;
   }
