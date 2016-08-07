@@ -12,13 +12,14 @@ import convert from 'koa-convert'
 import morgan from 'koa-morgan'
 import logger from './logger'
 import fs from 'fs'
+import koaqs from 'koa-qs'
 
 export default class Koapi {
   config = {}
   koa    = null
 
   constructor(){
-    this.koa    = require('koa-qs')(new Koa());
+    this.koa    = koaqs(new Koa());
     this.koa.on('error', err => logger.error(err));
   }
 

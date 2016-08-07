@@ -1,6 +1,7 @@
 import bookshelf from 'bookshelf'
 import bookshelf_joi_validator from 'bookshelf-joi-validator'
 import _ from 'lodash';
+import knex from 'knex'
 
 function koapi_base_model_plugin (bookshelf) {
   var M = bookshelf.Model;
@@ -69,7 +70,7 @@ const Model = {
   bookshelf:null,
   init(knex_config) {
     if (!Model.bookshelf) {
-      Model.bookshelf = bookshelf(require('knex')(knex_config))
+      Model.bookshelf = bookshelf(knex(knex_config))
         .plugin('registry')
         .plugin('virtuals')
         .plugin('visibility')

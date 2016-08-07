@@ -3,7 +3,9 @@ import _ from 'lodash'
 import qs from 'qs'
 import test from 'ava'
 import {expect} from 'chai'
-chai.use(require('chai-http'));
+import chai_http from 'chai-http'
+
+chai.use(chai_http);
 
 export default (cb) => {
   return cb({ResourceTester, test, expect, request});
