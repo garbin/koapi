@@ -27,7 +27,9 @@ const setup = (config) => {
 
 let {server, app} = setup(app => {
   let posts = new ResourceRouter(Post.collection());
-  posts.create();
+  posts.create({}, async (ctx, next) => {
+    await next();
+  });
   posts.read({
     sortable: ['created_at'],
     filterable: ['user_id'],
@@ -41,10 +43,7 @@ let {server, app} = setup(app => {
     await next();
   });
   comments.crud();
-  app.bodyparser({
-    fieldsKey: false,
-    filesKey: false,
-  });
+  app.bodyparser();
   app.routers( [ posts, posts.use('/posts/:post_id/comments', comments.routes()) ] );
 });
 

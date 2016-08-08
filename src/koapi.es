@@ -24,7 +24,13 @@ export default class Koapi {
   }
 
   bodyparser(options){
-    if (options) this.koa.use(convert(bodyparser(options)));
+    options = Object.assign({
+      multipart: true,
+      fields: 'body',
+      files: 'files',
+      multiples: true
+    }, options);
+    this.koa.use(convert(bodyparser(options)));
   }
 
   debug(on){
@@ -122,17 +128,7 @@ export default class Koapi {
   setup(config){
     config = _.defaults(config, {
       port: 3000,
-      bodyparser:{
-        extendTypes: {
-          json: ['application/x-javascript', 'text/plain'], // will parse application/x-javascript type body as a JSON string
-        },
-        multipart: true,
-        fieldsKey: false,
-        filesKey: false,
-        formidable: {
-          multiples: true
-        }
-      },
+      bodyparser: {},
       accesslog:{
         stream: process.stdout,
         path: null,
