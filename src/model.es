@@ -1,5 +1,5 @@
 import bookshelf from 'bookshelf'
-import bookshelf_joi_validator from 'bookshelf-joi-validator'
+import modelbase from 'bookshelf-modelbase'
 import _ from 'lodash';
 import knex from 'knex'
 
@@ -76,7 +76,7 @@ const Model = {
         .plugin('visibility')
         .plugin('pagination')
         .plugin(koapi_base_model_plugin)
-        .plugin(bookshelf_joi_validator);
+        .plugin(modelbase.pluggable);
     }
   },
   extend(protos, statics){

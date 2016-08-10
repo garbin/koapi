@@ -20,7 +20,7 @@ export const HttpTester = class  {
   config = {
     title:'',
     expect: function(res){return res;},
-    cth: function(e){return e;}
+    catch: function(e){ throw e; }
   };
   constructor(server) {
     this.request = request(server);

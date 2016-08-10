@@ -1,6 +1,8 @@
 import Koapi, {Model, ResourceRouter} from '../src'
 import suite from '../src/test'
 import knex_config from './knex/knexfile'
+import Joi from 'joi'
+import _ from 'lodash'
 
 Model.init(knex_config.test);
 
@@ -13,6 +15,10 @@ const Comment = Model.extend({
 const Post = Model.extend({
   tableName: 'posts',
   hasTimestamps: true,
+  validate: {
+    title: Joi.string().required(),
+    content: Joi.string().required()
+  },
   comments(){
     return this.hasMany(Comment);
   }
@@ -20,6 +26,7 @@ const Post = Model.extend({
 
 const setup = (config) => {
   let app = new Koapi();
+  app.jsonError();
   config(app);
   let server = app.listen(null);
   return {app, server};
@@ -48,9 +55,13 @@ let {server, app} = setup(app => {
 });
 
 
-suite(({ResourceTester, expect})=>{
+suite(({ResourceTester, request, test, expect})=>{
   let tester = new ResourceTester(server, '/posts');
   tester.create({ title: 'title', content: 'content'}, req => req.set('X-Header', 'haha')).test();
+  test('should return 422', t => request(server).post('/posts')
+                                                .send({ content: 'content'})
+                                                .then()
+                                                .catch(e => expect(e).to.have.status(422)));
   tester.read(req => req.set('X-Header', 'haha')).test();
   tester.read(100).catch(e => expect(e.actual).equals(204)).test();
   tester.read(1, req => req.set('X-Header', 'haha')).test();

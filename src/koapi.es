@@ -66,6 +66,24 @@ export default class Koapi {
     this.koa.use(morgan(format, Object.assign({ stream }, options)));
   }
 
+  jsonError(config){
+    config = _.defaults(config, {
+      preFormat: err => {
+        if (err.name == 'ValidationError') {
+          err.status = 422;
+        }
+
+        return err;
+      },
+      postFormat: (e, obj) => {
+        return process.env.NODE_ENV === 'production' ? _.omit(obj, 'stack') : obj
+      }
+    });
+    this.koa.use(error(config));
+
+    return this;
+  }
+
   compress(options){
     if (options) this.koa.use(convert(compress(options)));
 
@@ -140,9 +158,9 @@ export default class Koapi {
       throttle: false,
       serve: false,
       compress: false,
+      json_error: null,
       routers: [],
     });
-    this.koa.use(convert(error()));
     this.accesslog(config.accesslog);
     this.bodyparser(config.bodyparser);
     this.cors(config.cors);
