@@ -35,8 +35,10 @@ const setup = (config) => {
 
 let {server, app} = setup(app => {
   let posts = new ResourceRouter(Post.collection());
-  posts.create({}, async (ctx, next) => {
+  posts.create(async (ctx, next) => {
+    console.log('creating');
     await next();
+    console.log('created');
   });
   posts.read({
     sortable: ['created_at'],

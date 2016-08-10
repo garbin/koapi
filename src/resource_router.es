@@ -1,10 +1,26 @@
 import Router from 'koa-router'
+import compose from 'koa-compose'
 import Model from './model'
 import paginate from 'koa-pagination'
 import convert from 'koa-convert'
 import _ from 'lodash'
 
-const none = async (ctx, next) => await next();
+
+function parse_args(ori_args, option_defaults = {}) {
+  let args = Array.prototype.slice.call(ori_args);
+  let none = async (ctx, next) => await next();
+  let options = args.pop();
+  let middlewares = args;
+  middlewares = _.compact(middlewares);
+  if (_.isFunction(options)) {
+    middlewares = middlewares.concat(options);
+    options = {};
+  }
+  middlewares = _.isEmpty(middlewares) ? [none] : middlewares ;
+  options = _.defaults(options, option_defaults);
+
+  return {middlewares, options};
+}
 
 export default class ResourceRouter extends Router {
   constructor(collection, options){
@@ -26,29 +42,24 @@ export default class ResourceRouter extends Router {
     }
   }
 
-  create(options, middleware){
-    options = _.defaults(options, {
-      after: null,
-    });
+  create(){
+    let {middlewares, options} = parse_args(arguments)
     let {collection, options:{id}, pattern} = this;
     // create
-    this.post(pattern.root, middleware || none, async (ctx) => {
+    this.post(pattern.root, compose(middlewares), async (ctx) => {
       if (collection(ctx).relatedData) {
         ctx.state.resource = await collection(ctx).create(ctx.request.body);
       } else {
         ctx.state.resource = collection(ctx).model.forge();
         await ctx.state.resource.save(ctx.request.body);
       }
-      if (options.after) {
-        await options.after(ctx);
-      }
       ctx.body = ctx.state.resource;
       ctx.status = 201;
     });
     return this;
   }
-  read(options, middleware){
-    options = _.defaults(options, {
+  read(){
+    let {middlewares, options} = parse_args(arguments, {
       sortable: [],
       searchable: [],
       filterable: [],
@@ -58,7 +69,7 @@ export default class ResourceRouter extends Router {
     });
     let {collection, options:{id}, pattern} = this;
     // read list
-    this.get(pattern.root, convert(paginate(options.pagination)), middleware || none, async (ctx) => {
+    this.get(pattern.root, convert(paginate(options.pagination)), compose(middlewares), async (ctx) => {
       // console.log(collection(ctx).relatedData);
       let query = collection(ctx).model.forge();
       if (collection(ctx).relatedData) {
@@ -96,7 +107,7 @@ export default class ResourceRouter extends Router {
       ctx.pagination.length = resources.pagination.rowCount;
     });
     // read item
-    this.get(pattern.item, middleware || none, async (ctx) => {
+    this.get(pattern.item, compose(middlewares) || none, async (ctx) => {
       ctx.body = await collection(ctx)
       .query(q => q.where({[id]:ctx.params[id]}))
       .fetchOne(Object.assign({
@@ -105,10 +116,8 @@ export default class ResourceRouter extends Router {
     });
     return this;
   }
-  update(options, middleware){
-    options = _.defaults(options, {
-      after: null,
-    });
+  update(){
+    let {middlewares, options} = parse_args(arguments);
     let {collection, options:{id}, pattern} = this;
     const update = async (ctx) => {
       ctx.state.resource = (await collection(ctx).query(q => q.where({[id]:ctx.params[id]})).fetch({required:true})).first();
@@ -117,17 +126,15 @@ export default class ResourceRouter extends Router {
       ctx.body = ctx.state.resource;
       ctx.status = 202;
     }
-    this.put(pattern.item, middleware || none, update);
-    this.patch(pattern.item, middleware || none, update);
+    this.put(pattern.item, compose(middlewares), update);
+    this.patch(pattern.item, compose(middlewares), update);
 
     return this;
   }
-  destroy(options, middleware){
+  destroy(){
+    let {middlewares, options} = parse_args(arguments)
     let {collection, pattern, options:{id}} = this;
-    options = _.defaults(options, {
-      after: null,
-    });
-    this.del(pattern.item, middleware || none, async (ctx) => {
+    this.del(pattern.item, compose(middlewares), async (ctx) => {
       ctx.state.resource = await collection(ctx).query(q => q.where({[id]:ctx.params[id]})).fetchOne({require:true});
       ctx.state.deleted  = ctx.state.resource.toJSON();
       // ctx.state.resource = await collection(ctx).model.forge().where({[id]:ctx.params[id]});
