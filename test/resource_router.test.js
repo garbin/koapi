@@ -1,4 +1,4 @@
-import Koapi, {Model, ResourceRouter} from '../src'
+import Koapi, {middlewares, Model, ResourceRouter} from '../src'
 import suite from '../src/test'
 import knex_config from './knex/knexfile'
 import Joi from 'joi'
@@ -26,7 +26,8 @@ const Post = Model.extend({
 
 const setup = (config) => {
   let app = new Koapi();
-  app.jsonError();
+  app.use(middlewares.json_error())
+  app.compress();
   config(app);
   let server = app.listen(null);
   return {app, server};

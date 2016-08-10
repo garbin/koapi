@@ -66,7 +66,7 @@ export default class Koapi {
   }
 
   compress(options){
-    if (options) this.koa.use(convert(compress(options)));
+    if (options) this.koa.use(compress(options));
 
     return this;
   }

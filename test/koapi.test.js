@@ -3,6 +3,7 @@ import suite from '../src/test'
 
 const setup = (config) => {
   let app = new Koapi();
+  app.compress();
   config(app);
   let server = app.listen(null);
   return {app, server};
