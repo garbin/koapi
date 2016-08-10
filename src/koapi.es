@@ -5,7 +5,6 @@ import koa_logger from 'koa-logger'
 import cors from 'koa-cors'
 import throttle from 'koa-ratelimit'
 import serve from 'koa-static'
-import error from 'koa-json-error'
 import compress from 'koa-compress'
 import bodyparser from 'koa-better-body'
 import convert from 'koa-convert'
@@ -20,7 +19,7 @@ export default class Koapi {
 
   constructor(){
     this.koa    = koaqs(new Koa());
-    this.koa.on('error', err => logger.error(err));
+    this.koa.on('error', err => logger.error(err) );
   }
 
   bodyparser(options){
@@ -64,24 +63,6 @@ export default class Koapi {
     let format = config.format || 'combined';
     let options = config.options || {};
     this.koa.use(morgan(format, Object.assign({ stream }, options)));
-  }
-
-  jsonError(config){
-    config = _.defaults(config, {
-      preFormat: err => {
-        if (err.name == 'ValidationError') {
-          err.status = 422;
-        }
-
-        return err;
-      },
-      postFormat: (e, obj) => {
-        return process.env.NODE_ENV === 'production' ? _.omit(obj, 'stack') : obj
-      }
-    });
-    this.koa.use(error(config));
-
-    return this;
   }
 
   compress(options){
