@@ -9,6 +9,7 @@ import compress from 'koa-compress'
 import bodyparser from 'koa-better-body'
 import convert from 'koa-convert'
 import morgan from 'koa-morgan'
+import helmet from 'koa-helmet'
 import logger from './logger'
 import fs from 'fs'
 import koaqs from 'koa-qs'
@@ -71,6 +72,13 @@ export default class Koapi {
     return this;
   }
 
+  helmet(config){
+    if (config) {
+      this.koa.use(helmet(config));
+    }
+    return this
+  }
+
   use(middlewares){
     if (!_.isArray(middlewares)) {
       middlewares = Array.prototype.slice.call(arguments);
@@ -82,6 +90,7 @@ export default class Koapi {
 
     return this;
   }
+
 
   routers(routers){
     var _routers = [];
@@ -140,6 +149,7 @@ export default class Koapi {
       serve: false,
       compress: false,
       json_error: null,
+      helmet: null,
       routers: [],
     });
     this.accesslog(config.accesslog);
@@ -148,6 +158,7 @@ export default class Koapi {
     this.debug(process.env.DEBUG);
     this.throttle(config.throttle);
     this.compress(config.compress);
+    this.helmet(config.helmet);
     this.use(config.middlewares.before);
     this.routers(config.routers);
     this.use(config.middlewares.after);

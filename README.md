@@ -32,11 +32,15 @@ import Koapi, {ResourceRouter, Model} from 'koapi';
 const app = new Koapi();
 
 /****************** Connect to database ******************/
-let database_config = {
-  connection: 'pg',
-  // knex database config...
-};
-Model.init(database_config);
+Model.init({
+  client: 'pg',
+  connection: {
+    host     : '127.0.0.1',
+    user     : 'your_database_user',
+    password : 'your_database_password',
+    database : 'myapp_test'
+  }
+});
 
 
 
@@ -60,13 +64,13 @@ const Post = Model.extend({
 /****************** Implement Routers ******************/
 
 const posts = new ResourceRouter(Post.collection());
-// YES! IT'S DEAD SIMPLE! RIGHT?
 // POST /posts
 // GET  /posts
 // GET  /posts/:id
-// PATCH /posts
+// PATCH /posts/:id
 // DELETE /posts/:id
-// All are ready
+// are ALL ready!
+// YES! IT'S DEAD SIMPLE! RIGHT?
 posts.crud();
 
 const comments = new ResourceRouter(ctx => ctx.state.post.comments());
@@ -99,7 +103,7 @@ comments.destroy();
 app.bodyparser();
 app.routers([
   posts,
-  // YES! Thanks to koa-router, it support nested router
+  // YES! Thanks to koa-router, nested router is supported
   posts.use('/posts/:post_id/comments', comments)
 ]);
 
