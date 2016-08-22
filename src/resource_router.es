@@ -47,11 +47,12 @@ export default class ResourceRouter extends Router {
     let {collection, options:{id}, pattern} = this;
     // create
     this.post(pattern.root, compose(middlewares), async (ctx) => {
+      let attributes = ctx.state.attributes || ctx.request.body;
       if (collection(ctx).relatedData) {
-        ctx.state.resource = await collection(ctx).create(ctx.request.body);
+        ctx.state.resource = await collection(ctx).create(attributes);
       } else {
         ctx.state.resource = collection(ctx).model.forge();
-        await ctx.state.resource.save(ctx.request.body);
+        await ctx.state.resource.save(attributes);
       }
       ctx.body = ctx.state.resource;
       ctx.status = 201;
@@ -120,8 +121,9 @@ export default class ResourceRouter extends Router {
     let {middlewares, options} = parse_args(arguments);
     let {collection, options:{id}, pattern} = this;
     const update = async (ctx) => {
+      let attributes = ctx.state.attributes || ctx.request.body;
       ctx.state.resource = (await collection(ctx).query(q => q.where({[id]:ctx.params[id]})).fetch({required:true})).first();
-      await ctx.state.resource.save(ctx.request.body, { patch: true });
+      await ctx.state.resource.save(attributes, { patch: true });
       if (options.after)  await options.after(ctx);
       ctx.body = ctx.state.resource;
       ctx.status = 202;
