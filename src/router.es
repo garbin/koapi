@@ -1,10 +1,21 @@
 import Router from 'koa-router'
 import compose from 'koa-compose'
 import Model from './model'
+import Collection from 'bookshelf/lib/collection'
 import paginate from 'koa-pagination'
 import convert from 'koa-convert'
 import _ from 'lodash'
 
+Router.define = function (options, cb) {
+  if (_.isFunction(options)) {
+    cb = options;
+    options = {};
+  }
+  cb = cb || function(router){return router};
+  let router = new Router();
+  cb(router);
+  return router;
+}
 
 function parse_args(ori_args, option_defaults = {}) {
   let args = Array.prototype.slice.call(ori_args);
@@ -22,7 +33,20 @@ function parse_args(ori_args, option_defaults = {}) {
   return {middlewares, options};
 }
 
-export default class ResourceRouter extends Router {
+
+export class ResourceRouter extends Router {
+  static define(options, cb = router => router.crud()){
+    let {collection, ...rest} = options;
+    if (options instanceof Function || options instanceof Collection) {
+      collection = options;
+      options = undefined;
+    } else {
+      options = rest;
+    }
+    let router = new this(collection, options);
+    cb(router);
+    return router;
+  }
   constructor(collection, options){
     options = _.defaults(options, {
       root: '',
@@ -152,3 +176,5 @@ export default class ResourceRouter extends Router {
     return this.create().read().update().destroy();
   }
 }
+
+export {Router};

@@ -58,6 +58,8 @@
   "dependencies": {
     "ava": "^0.15.2",
     "bookshelf": "^0.9.5",
+    "bookshelf-cascade-delete": "^1.0.5",
+    "bookshelf-json-columns": "^1.1.0",
     "bookshelf-modelbase": "^2.10.1",
     "chai": "^3.5.0",
     "chai-http": "^3.0.0",

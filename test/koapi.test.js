@@ -26,7 +26,7 @@ suite(({test, expect, request}) => {
   let {server, app} = setup(app => {
     app.routers([
       (new Router).get('/', ctx => ctx.body = 'Hello World').routes(),
-      (new Router).get('/test', ctx => ctx.body = 'test')
+      Router.define(router => router.get('/test', ctx => ctx.body = 'test'))
     ]);
   });
   test('should get 200 ok', t => request(server)
