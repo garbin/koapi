@@ -37,6 +37,8 @@ let {server, app} = setup(app => {
   let posts = new ResourceRouter(Post.collection());
   posts.create(async (ctx, next) => {
     console.log('creating');
+    ctx.state.attributes = ctx.request.body;
+    ctx.state.attributes.title = 'Hehe';
     await next();
     console.log('created');
   });
@@ -60,7 +62,10 @@ let {server, app} = setup(app => {
 
 suite(({ResourceTester, request, test, expect})=>{
   let tester = new ResourceTester(server, '/posts');
-  tester.create({ title: 'title', content: 'content'}, req => req.set('X-Header', 'haha')).test();
+  tester.create({ title: 'title', content: 'content'}, req => req.set('X-Header', 'haha'))
+        .test(res => {
+          expect(res.body.title).equals('Hehe');
+        });
   test('should return 422', t => request(server).post('/posts')
                                                 .send({ content: 'content'})
                                                 .then()
