@@ -6,6 +6,7 @@ import json_columns from 'bookshelf-json-columns'
 import cascade_delete from 'bookshelf-cascade-delete'
 import soft_delete from 'bookshelf-paranoia'
 import mask from 'bookshelf-mask'
+import uuid from 'bookshelf-uuid'
 
 
 function koapi_base_model_plugin (bookshelf) {
@@ -52,6 +53,7 @@ const Model = {
         .plugin(cascade_delete)
         .plugin(soft_delete)
         .plugin(mask)
+        .plugin(uuid)
         .plugin(koapi_base_model_plugin)
         .plugin(modelbase.pluggable);
     }
