@@ -20,6 +20,8 @@ function koapi_base_model_plugin (bookshelf) {
   DuplicateError.prototype = Error.prototype;
   bookshelf.Model = M.extend({
     initialize: function () {
+      M.prototype.initialize.call(this);
+      
       this.on('saving', this.validateDuplicates);
     },
     validateDuplicates: function (model, attrs, options) {

@@ -9,7 +9,7 @@ Model.init(knex_config.test);
 
 const Comment = Model.extend({
   tableName: 'comments',
-  hasTimestamps: true,
+  hasTimestamps: true
 });
 
 const Post = Model.extend({
