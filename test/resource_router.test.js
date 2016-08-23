@@ -34,29 +34,35 @@ const setup = (config) => {
 };
 
 let {server, app} = setup(app => {
-  let posts = ResourceRouter.define(Post.collection(), router => {
-    router.create(async (ctx, next) => {
-      console.log('creating');
-      ctx.state.attributes = ctx.request.body;
-      ctx.state.attributes.title = 'Hehe';
-      await next();
-      console.log('created');
-    });
-    router.read({
-      sortable: ['created_at'],
-      filterable: ['user_id'],
-      searchable: ['title', 'content']
-    });
-    router.update();
-    router.destroy();
+  let posts = ResourceRouter.define({
+    collection: Post.collection(),
+    setup(router){
+      router.create(async (ctx, next) => {
+        console.log('creating');
+        ctx.state.attributes = ctx.request.body;
+        ctx.state.attributes.title = 'Hehe';
+        await next();
+        console.log('created');
+      });
+      router.read({
+        sortable: ['created_at'],
+        filterable: ['user_id'],
+        searchable: ['title', 'content']
+      });
+      router.update();
+      router.destroy();
+    }
   });
-  let comments = ResourceRouter.define(ctx => ctx.state.post.comments(), router => {
-    router.use(async (ctx, next) => {
-      ctx.state.post = await Post.where({id:ctx.params.post_id}).fetch();
-      await next();
-    });
-    router.crud();
-  })
+  let comments = ResourceRouter.define({
+    collection: ctx => ctx.state.post.comments(),
+    setup(router){
+      router.use(async (ctx, next) => {
+        ctx.state.post = await Post.where({id:ctx.params.post_id}).fetch();
+        await next();
+      });
+      router.crud();
+    }
+  });
   app.bodyparser();
   app.routers( [ posts, posts.use('/posts/:post_id/comments', comments.routes()) ] );
 });

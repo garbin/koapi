@@ -6,14 +6,17 @@ import paginate from 'koa-pagination'
 import convert from 'koa-convert'
 import _ from 'lodash'
 
-Router.define = function (options, cb) {
+Router.define = function (options) {
+  let {setup, ...rest} = options;
   if (_.isFunction(options)) {
-    cb = options;
+    setup = options;
     options = {};
   }
-  cb = cb || function(router){return router};
+  options = rest || options;
+  setup = setup || (router => router)
   let router = new Router();
-  cb(router);
+  setup(router);
+
   return router;
 }
 
@@ -35,16 +38,16 @@ function parse_args(ori_args, option_defaults = {}) {
 
 
 export class ResourceRouter extends Router {
-  static define(options, cb = router => router.crud()){
-    let {collection, ...rest} = options;
+  static define(options){
+    let {collection, setup, ...rest} = options;
     if (options instanceof Function || options instanceof Collection) {
       collection = options;
       options = undefined;
-    } else {
-      options = rest;
     }
+    options = rest || options;
+    setup = setup || (router => router.crud)
     let router = new this(collection, options);
-    cb(router);
+    setup(router);
     return router;
   }
   constructor(collection, options){
