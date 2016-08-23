@@ -45,7 +45,7 @@ export class ResourceRouter extends Router {
       options = undefined;
     }
     options = rest || options;
-    setup = setup || (router => router.crud)
+    setup = setup || (router => router.crud())
     let router = new this(collection, options);
     setup(router);
     return router;
