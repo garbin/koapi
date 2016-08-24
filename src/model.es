@@ -21,8 +21,28 @@ function koapi_base_model_plugin (bookshelf) {
   bookshelf.Model = M.extend({
     initialize: function () {
       M.prototype.initialize.call(this);
-      
+
       this.on('saving', this.validateDuplicates);
+      this.on('destroying', this.destroyDependents);
+    },
+    destroyDependents(){
+      return new Promise((resolve, reject)=>{
+        if (this.constructor.dependents) {
+          Promise.all(this.constructor.dependents.map((depend)=>{
+            return new Promise((_resolve, _reject)=>{
+              if (this[depend]().relatedData.type == 'belongsToMany') {
+                this[depend]().detach().then(_resolve).catch(_reject);
+              } else {
+                this.load(depend).then(()=>{
+                  this.related(depend).invokeThen('destroy').then(_resolve).catch(_reject);
+                }).catch(_reject);
+              }
+            });
+          })).then(resolve).catch(reject);
+        } else {
+          resolve();
+        }
+      });
     },
     validateDuplicates: function (model, attrs, options) {
       return new Promise((resolve, reject)=>{
@@ -52,7 +72,7 @@ const Model = {
         .plugin('visibility')
         .plugin('pagination')
         .plugin(json_columns)
-        .plugin(cascade_delete)
+        // .plugin(cascade_delete)
         .plugin(soft_delete)
         .plugin(mask)
         .plugin(uuid)
