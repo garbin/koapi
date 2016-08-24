@@ -14,7 +14,7 @@ Router.define = function (options) {
   }
   options = rest || options;
   setup = setup || (router => router)
-  let router = new Router();
+  let router = new Router(options);
   setup(router);
 
   return router;
