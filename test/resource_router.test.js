@@ -38,11 +38,11 @@ let {server, app} = setup(app => {
     collection: Post.collection(),
     setup(router){
       router.create(async (ctx, next) => {
-        console.log('creating');
         ctx.state.attributes = ctx.request.body;
         ctx.state.attributes.title = 'Hehe';
         await next();
-        console.log('created');
+        ctx.body = ctx.body.toJSON();
+        ctx.body.haha = 'yes';
       });
       router.read({
         sortable: ['created_at'],
@@ -73,6 +73,7 @@ suite(({ResourceTester, request, test, expect})=>{
   tester.create({ title: 'title', content: 'content'}, req => req.set('X-Header', 'haha'))
         .test(res => {
           expect(res.body.title).equals('Hehe');
+          expect(res.body.haha).equals('yes');
         });
   test('should return 422', t => request(server).post('/posts')
                                                 .send({ content: 'content'})

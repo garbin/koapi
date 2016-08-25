@@ -5,9 +5,13 @@ exports.seed = function(knex, Promise) {
     knex('comments').del(),
 
     // Inserts seed entries
-    knex('posts').insert({title: 'Title', content:'Content', user_id:1}),
-    knex('posts').insert({title: 'Title', content:'Content', user_id:1}),
-    knex('comments').insert({title: 'Title', content:'Content', user_id:1, post_id:1 }),
-    knex('comments').insert({title: 'Title', content:'Content', user_id:1, post_id:2 })
+    knex('posts').insert([
+      {title: 'Title', content:'Content', user_id:1},
+      {title: 'Title', content:'Content', user_id:1}
+    ]),
+    knex('comments').insert([
+      {title: 'Title', content:'Content', user_id:1, post_id:1 },
+      {title: 'Title', content:'Content', user_id:1, post_id:2 }
+    ])
   );
 };
