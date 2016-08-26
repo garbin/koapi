@@ -67,9 +67,9 @@ export class ResourceRouter extends Router {
       options.name = options.name || collection.tableName();
       options.model= options.model || collection.model;
       options.id   = options.id || options.model.prototype.idAttribute;
-      options.fields = options.fields || options.model.fields;
       this.collection = ctx => collection;
     }
+    options.fields = options.fields || (options.model ? options.model.fields : undefined);
     options.root = options.root || '/' + options.name;
     options.title = options.title || options.name;
     options.description = options.description || options.title;
