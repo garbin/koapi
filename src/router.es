@@ -65,12 +65,12 @@ export class ResourceRouter extends Router {
     if (!_.isFunction(collection)) {
       options.id   = options.id || collection.model.prototype.idAttribute;
       options.name = options.name || collection.tableName();
-      options.root = options.root || '/' + options.name;
-      options.title = options.title || options.name;
-      options.description = options.description || options.title;
       options.fields = options.fields || collection.model.prototype.validate;
       this.collection = ctx => collection;
     }
+    options.root = options.root || '/' + options.name;
+    options.title = options.title || options.name;
+    options.description = options.description || options.title;
     options.id = options.id || 'id';
     this.options = options;
 

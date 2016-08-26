@@ -55,6 +55,7 @@ let {server, app} = setup(app => {
   });
   let comments = ResourceRouter.define({
     collection: ctx => ctx.state.post.comments(),
+    name:'comments',
     setup(router){
       router.use(async (ctx, next) => {
         ctx.state.post = await Post.where({id:ctx.params.post_id}).fetch();
@@ -63,8 +64,9 @@ let {server, app} = setup(app => {
       router.crud();
     }
   });
+  posts.use('/posts/:post_id(\\d+)', comments.routes());
   app.bodyparser();
-  app.routers( [ posts, posts.use('/posts/:post_id/comments', comments.routes()) ] );
+  app.routers( [ posts ] );
 });
 
 suite(({request, test, expect})=>{
