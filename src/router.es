@@ -58,15 +58,17 @@ export class ResourceRouter extends Router {
     options = _.defaults(options, {
       root: '',
       id: '',
+      name: '',
     });
     super(options);
     this.collection = collection;
     if (!_.isFunction(collection)) {
       options.id   = options.id || collection.model.prototype.idAttribute;
-      options.root = options.root || '/' + collection.tableName();
-      options.fields = options.fields || collection.model.prototype.validate;
-      options.title = options.title || collection.tableName();
+      options.name = options.name || collection.tableName();
+      options.root = options.root || '/' + options.name;
+      options.title = options.title || options.name;
       options.description = options.description || options.title;
+      options.fields = options.fields || collection.model.prototype.validate;
       this.collection = ctx => collection;
     }
     options.id = options.id || 'id';
