@@ -1,4 +1,4 @@
-import Koapi, {Model, Router, middlewares} from '../src';
+import Koapi, {Router, middlewares} from '../src';
 import suite from '../src/test'
 
 const setup = (config) => {

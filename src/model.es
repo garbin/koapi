@@ -1,4 +1,4 @@
-import bookshelf from 'bookshelf'
+import Bookshelf from 'bookshelf'
 import modelbase from 'bookshelf-modelbase'
 import _ from 'lodash';
 import knex from 'knex'
@@ -63,30 +63,26 @@ function koapi_base_model_plugin (bookshelf) {
   });
 };
 
-const Model = {
-  bookshelf:null,
-  init(knex_config) {
-    if (!Model.bookshelf) {
-      Model.bookshelf = bookshelf(knex(knex_config))
-        .plugin('registry')
-        .plugin('virtuals')
-        .plugin('visibility')
-        .plugin('pagination')
-        .plugin(json_columns)
-        // .plugin(cascade_delete)
-        .plugin(soft_delete)
-        .plugin(mask)
-        .plugin(uuid)
-        .plugin(modelbase.pluggable)
-        .plugin(koapi_base_model_plugin)
-    }
-  },
-  extend(protos, statics){
-    if (!Model.bookshelf) {
-      throw new Error('You should call Model.init before');
-    }
-    return Model.bookshelf.Model.extend(protos, statics);
-  }
-};
+export let bookshelf;
 
-export default Model;
+export function initialize(knex_config) {
+  if (!bookshelf) {
+    bookshelf = Bookshelf(knex(knex_config))
+                  .plugin('registry')
+                  .plugin('virtuals')
+                  .plugin('visibility')
+                  .plugin('pagination')
+                  .plugin(json_columns)
+                  // .plugin(cascade_delete)
+                  .plugin(soft_delete)
+                  .plugin(mask)
+                  .plugin(uuid)
+                  .plugin(modelbase.pluggable)
+                  .plugin(koapi_base_model_plugin)
+  }
+}
+
+export default function () {
+  if (!bookshelf) throw new Error('You should call initialize before');
+  return bookshelf.Model.extend.apply(bookshelf.Model, arguments);
+}

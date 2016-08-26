@@ -1,18 +1,18 @@
-import Koapi, {middlewares, Model, ResourceRouter} from '../src'
+import Koapi, { middlewares, ResourceRouter } from '../src'
+import extend, { initialize } from '../src/model'
 import suite from '../src/test'
 import knex_config from './knex/knexfile'
 import Joi from 'joi'
 import _ from 'lodash'
 
-Model.init(knex_config.test);
+initialize(knex_config.test);
 
-
-const Comment = Model.extend({
+const Comment = extend({
   tableName: 'comments',
   hasTimestamps: true
 });
 
-const Post = Model.extend({
+const Post = extend({
   tableName: 'posts',
   hasTimestamps: true,
   comments(){
