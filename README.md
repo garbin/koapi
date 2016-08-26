@@ -27,12 +27,13 @@ npm install koapi
 ## Here we go!
 ### app.js
 ```js
-import Koapi, {ResourceRouter, Model} from 'koapi';
+import Koapi, { ResourceRouter } from 'koapi';
+import extend, { initialize } from 'koapi/lib/model'
 
 const app = new Koapi();
 
 /****************** Connect to database ******************/
-Model.init({
+initialize({
   client: 'pg',
   connection: {
     host     : '127.0.0.1',
@@ -45,12 +46,12 @@ Model.init({
 
 
 /****************** Model definition    ******************/
-const Comment = Model.extend({
+const Comment = extend({
   tableName: 'comments',
   hasTimestamps: true,
 });
 
-const Post = Model.extend({
+const Post = extend({
   tableName: 'posts',
   hasTimestamps: true,
   comments(){
@@ -63,7 +64,6 @@ const Post = Model.extend({
 
 /****************** Implement Routers ******************/
 
-const posts = new ResourceRouter(Post.collection());
 // POST /posts
 // GET  /posts
 // GET  /posts/:id
@@ -71,41 +71,42 @@ const posts = new ResourceRouter(Post.collection());
 // DELETE /posts/:id
 // are ALL ready!
 // YES! IT'S DEAD SIMPLE! RIGHT?
-posts.crud();
+const posts = ResourceRouter.define(Post.collection());
 
-const comments = new ResourceRouter(ctx => ctx.state.post.comments());
-
-// get post instance in context
-comments.use(async (ctx, next) => {
-  ctx.state.post = await Post.findById(ctx.params.post_id, {require:true});
-  await next();
+const comments = ResourceRouter.define({
+  collection: ctx => ctx.state.post.comments(),
+  setup(router){
+    // get post instance in context
+    router.use(async (ctx, next) => {
+      ctx.state.post = await Post.findById(ctx.params.post_id, {require:true});
+      await next();
+    });
+    // method "crud" is a shortcut for create, read, update, destroy
+    // YOU CAN ALSO USE MIDDLEWARE in create, read, update, destroy
+    // AWESOME! RIGHT?!!!
+    router.create(async(ctx, next) => {
+      // you can do anything before create
+      await next();
+      // you can do anything after create
+    });
+    router.read(/* if you want, you can place any middlewares here */{
+      filterable: ['created_at'], // filterable field
+      sortable: ['created_at'], // sortable field
+    });
+    // comment may not have update
+    // comments.update();
+    router.destroy();
+  }
 });
 
-// method "crud" is a shortcut for create, read, update, destroy
-// YOU CAN ALSO USE MIDDLEWARE in create, read, update, destroy
-// AWESOME! RIGHT?!!!
-comments.create(async(ctx, next) => {
-  // you can do anything before create
-  await next();
-  // you can do anything after create
-});
-comments.read(/* if you want, you can place any middlewares here */{
-  filterable: ['created_at'], // filterable field
-  sortable: ['created_at'], // sortable field
-});
-// comment may not have update
-// comments.update();
-comments.destroy();
+// YES! Thanks to koa-router, nested router is supported
+posts.use('/posts/:post_id/comments', comments.routes())
 
 
 
 /****************** Start server      ******************/
 app.bodyparser();
-app.routers([
-  posts,
-  // YES! Thanks to koa-router, nested router is supported
-  posts.use('/posts/:post_id/comments', comments)
-]);
+app.routers([ posts ]);
 
 app.listen(3000);
 ```
