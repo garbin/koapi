@@ -4,6 +4,9 @@ import Model from './model'
 import Collection from 'bookshelf/lib/collection'
 import paginate from 'koa-pagination'
 import convert from 'koa-convert'
+import joi_to_json_schema from 'joi-to-json-schema'
+import jsf from 'json-schema-faker'
+import Joi from 'joi'
 import _ from 'lodash'
 
 Router.define = function (options) {
@@ -39,7 +42,7 @@ function parse_args(ori_args, option_defaults = {}) {
 
 export class ResourceRouter extends Router {
   static define(options){
-    let {collection, setup, ...rest} = options;
+    let {collection, fields, setup, ...rest} = options;
     if (options instanceof Function || options instanceof Collection) {
       collection = options;
       options = undefined;
@@ -50,18 +53,24 @@ export class ResourceRouter extends Router {
     setup(router);
     return router;
   }
+  methods = {create:false, read:false, update: false, destroy: false}
   constructor(collection, options){
     options = _.defaults(options, {
       root: '',
-      id: 'id',
+      id: '',
     });
     super(options);
-    this.options = options;
     this.collection = collection;
     if (!_.isFunction(collection)) {
+      options.id   = options.id || collection.model.prototype.idAttribute;
       options.root = options.root || '/' + collection.tableName();
+      options.fields = options.fields || collection.model.prototype.validate;
+      options.title = options.title || collection.tableName();
+      options.description = options.description || options.title;
       this.collection = ctx => collection;
     }
+    options.id = options.id || 'id';
+    this.options = options;
 
     this.pattern = {
       root: options.root || '/',
@@ -69,9 +78,65 @@ export class ResourceRouter extends Router {
     }
   }
 
+  schema(){
+    let {collection, options:{id, fields, title, description}} = this;
+    if (!fields) {
+      throw new Error('fields can not be empty');
+    }
+
+    let request_item = Joi.object(fields).label(title).description(description);
+    let response_item = Joi.object(Object.assign({
+      id: Joi.number().integer().min(1).required(),
+      created_at: Joi.date().required(),
+      updated_at: Joi.date().required()
+    }, _.mapValues(fields, v => v.required()))).label(title).description(description);
+    function _schema(request, response) {
+      let request_schema = request ? joi_to_json_schema(request) : {};
+      let response_schema = response ? joi_to_json_schema(response) : {};
+      return {
+        schema:{
+          request: request_schema,
+          response: response_schema
+        },
+        example:{
+          request: !_.isEmpty(request_schema) ? jsf(request_schema) : {},
+          response: !_.isEmpty(response_schema) ? jsf(response_schema) : {}
+        }
+      }
+    }
+    let result = {};
+    _.forIn(this.methods, (v, k) => {
+      if (v) {
+        let schema;
+        switch (k) {
+          case 'create':
+            schema = _schema(request_item, response_item);
+          break;
+          case 'read':
+            result['list'] = _schema(null, Joi.array().items(response_item));
+            result['read'] = _schema(null, response_item);
+          break;
+          case 'update':
+            let req = Joi.object(_.mapValues(fields, v => v.optional())).label(title).description(description);
+            schema = _schema(req, response_item);
+            break;
+          case 'destroy':
+            schema = _schema(null, null);
+          break;
+        }
+        if (schema) {
+          result[k] = schema;
+        }
+      }
+    });
+
+    return result;
+  }
+
   create(){
     let {middlewares, options} = parse_args(arguments)
     let {collection, options:{id}, pattern} = this;
+    this.methods.create = true;
     // create
     this.post(pattern.root, compose(middlewares), async (ctx) => {
       let attributes = ctx.state.attributes || ctx.request.body;
@@ -96,6 +161,7 @@ export class ResourceRouter extends Router {
       fetchItem: {},
     });
     let {collection, options:{id}, pattern} = this;
+    this.methods.read = true;
     // read list
     this.get(pattern.root, convert(paginate(options.pagination)), compose(middlewares), async (ctx) => {
       // console.log(collection(ctx).relatedData);
@@ -147,6 +213,7 @@ export class ResourceRouter extends Router {
   update(){
     let {middlewares, options} = parse_args(arguments);
     let {collection, options:{id}, pattern} = this;
+    this.methods.update = true;
     const update = async (ctx) => {
       let attributes = ctx.state.attributes || ctx.request.body;
       ctx.state.resource = (await collection(ctx).query(q => q.where({[id]:ctx.params[id]})).fetch({required:true})).first();
@@ -163,6 +230,8 @@ export class ResourceRouter extends Router {
   destroy(){
     let {middlewares, options} = parse_args(arguments)
     let {collection, pattern, options:{id}} = this;
+    this.methods.destroy = true;
+
     this.del(pattern.item, compose(middlewares), async (ctx) => {
       ctx.state.resource = await collection(ctx).query(q => q.where({[id]:ctx.params[id]})).fetchOne({require:true});
       ctx.state.deleted  = ctx.state.resource.toJSON();

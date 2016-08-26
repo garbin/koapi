@@ -67,6 +67,41 @@ let {server, app} = setup(app => {
   app.routers( [ posts, posts.use('/posts/:post_id/comments', comments.routes()) ] );
 });
 
+suite(({request, test, expect})=>{
+  let posts = ResourceRouter.define({
+    collection: Post.collection(),
+    setup(router){
+      router.create(async (ctx, next) => {
+        ctx.state.attributes = ctx.request.body;
+        ctx.state.attributes.title = 'Hehe';
+        await next();
+        ctx.body = ctx.body.toJSON();
+        ctx.body.haha = 'yes';
+      });
+      router.read({
+        sortable: ['created_at'],
+        filterable: ['user_id'],
+        searchable: ['title', 'content']
+      });
+      router.update();
+      router.destroy();
+    }
+  });
+  test('schema', t => {
+    let schema = posts.schema();
+    expect(schema).to.have.property('create');
+    expect(schema).to.have.property('list');
+    expect(schema).to.have.property('read');
+    expect(schema).to.have.property('update');
+    expect(schema).to.have.property('destroy');
+    expect(schema.create).to.have.property('schema');
+    expect(schema.create).to.have.property('example');
+    expect(schema.create.schema).to.have.property('request');
+    expect(schema.create.schema).to.have.property('response');
+    expect(schema.create.example).to.have.property('request');
+    expect(schema.create.example).to.have.property('response');
+  });
+});
 
 suite(({ResourceTester, request, test, expect})=>{
   let tester = new ResourceTester(server, '/posts');

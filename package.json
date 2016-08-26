@@ -67,6 +67,8 @@
     "chai": "^3.5.0",
     "chai-http": "^3.0.0",
     "isipaddress": "0.0.2",
+    "joi-to-json-schema": "^2.2.0",
+    "json-schema-faker": "^0.3.6",
     "knex": "^0.10.0",
     "koa": "^2.0.0",
     "koa-accesslog": "0.0.2",
