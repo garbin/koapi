@@ -41,6 +41,8 @@ function parse_args(ori_args, option_defaults = {}) {
 
 
 export class ResourceRouter extends Router {
+  methods = {create:false, read:false, update: false, destroy: false}
+
   static define(options){
     let {collection, setup, ...rest} = options;
     if (options instanceof Function || options instanceof Collection) {
@@ -53,7 +55,6 @@ export class ResourceRouter extends Router {
     setup(router);
     return router;
   }
-  methods = {create:false, read:false, update: false, destroy: false}
   constructor(collection, options){
     options = _.defaults(options, {
       root: '',
@@ -63,9 +64,9 @@ export class ResourceRouter extends Router {
     super(options);
     this.collection = collection;
     if (!_.isFunction(collection)) {
-      options.id   = options.id || collection.model.prototype.idAttribute;
       options.name = options.name || collection.tableName();
-      options.fields = options.fields || collection.model.fields;
+      options.model= options.model || collection.model;
+      options.id   = options.id || options.model.prototype.idAttribute;
       this.collection = ctx => collection;
     }
     options.root = options.root || '/' + options.name;
@@ -81,18 +82,20 @@ export class ResourceRouter extends Router {
   }
 
   schema(){
-    let {collection, options:{id, fields, title, description}} = this;
-    if (!fields) {
+    let { options:{ model, id, title, description } } = this;
+    if (!model.fields) {
       throw new Error('fields can not be empty');
     }
 
-    let base_joi = {
-      [id]: Joi.number().integer().min(1).required(),
-      created_at: Joi.date().required(),
-      updated_at: Joi.date().required()
-    };
-    let request_item = Joi.object(_.omit(fields, _.keys(base_joi))).label(title).description(description);
-    let response_item = Joi.object(Object.assign({}, base_joi, _.mapValues(fields, v => v.required()))).label(title).description(description);
+    let base_joi = Object.assign({
+      [id]: Joi.number().integer().min(1),
+    }, model.prototype.hasTimestamps ? {
+      created_at: Joi.date(),
+      updated_at: Joi.date()
+    } : {});
+
+    let request_item = Joi.object(_.omit(model.fields, _.keys(base_joi))).label(title).description(description);
+    let response_item = Joi.object(Object.assign({}, base_joi, _.mapValues(model.fields, v => v.required()))).label(title).description(description);
     function _schema(request, response) {
       let request_schema = request ? joi_to_json_schema(request) : {};
       let response_schema = response ? joi_to_json_schema(response) : {};
@@ -120,7 +123,7 @@ export class ResourceRouter extends Router {
             result['read'] = _schema(null, response_item);
           break;
           case 'update':
-            let req = Joi.object(_.omit(_.mapValues(fields, v => v.optional()), _.keys(base_joi))).label(title).description(description);
+            let req = Joi.object(_.omit(_.mapValues(model.fields, v => v.optional()), _.keys(base_joi))).label(title).description(description);
             schema = _schema(req, response_item);
             break;
           case 'destroy':
