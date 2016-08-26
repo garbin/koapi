@@ -67,6 +67,7 @@ export class ResourceRouter extends Router {
       options.name = options.name || collection.tableName();
       options.model= options.model || collection.model;
       options.id   = options.id || options.model.prototype.idAttribute;
+      options.fields = options.fields || options.model.fields;
       this.collection = ctx => collection;
     }
     options.root = options.root || '/' + options.name;
@@ -82,8 +83,8 @@ export class ResourceRouter extends Router {
   }
 
   schema(){
-    let { options:{ model, id, title, description } } = this;
-    if (!model.fields) {
+    let { options:{ model, fields, id, title, description } } = this;
+    if (!fields) {
       throw new Error('fields can not be empty');
     }
 
@@ -94,8 +95,8 @@ export class ResourceRouter extends Router {
       updated_at: Joi.date()
     } : {});
 
-    let request_item = Joi.object(_.omit(model.fields, _.keys(base_joi))).label(title).description(description);
-    let response_item = Joi.object(Object.assign({}, base_joi, _.mapValues(model.fields, v => v.required()))).label(title).description(description);
+    let request_item = Joi.object(_.omit(fields, _.keys(base_joi))).label(title).description(description);
+    let response_item = Joi.object(Object.assign({}, base_joi, _.mapValues(fields, v => v.required()))).label(title).description(description);
     function _schema(request, response) {
       let request_schema = request ? joi_to_json_schema(request) : {};
       let response_schema = response ? joi_to_json_schema(response) : {};
@@ -123,7 +124,7 @@ export class ResourceRouter extends Router {
             result['read'] = _schema(null, response_item);
           break;
           case 'update':
-            let req = Joi.object(_.omit(_.mapValues(model.fields, v => v.optional()), _.keys(base_joi))).label(title).description(description);
+            let req = Joi.object(_.omit(_.mapValues(fields, v => v.optional()), _.keys(base_joi))).label(title).description(description);
             schema = _schema(req, response_item);
             break;
           case 'destroy':
