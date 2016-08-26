@@ -42,7 +42,7 @@ function parse_args(ori_args, option_defaults = {}) {
 
 export class ResourceRouter extends Router {
   static define(options){
-    let {collection, fields, setup, ...rest} = options;
+    let {collection, setup, ...rest} = options;
     if (options instanceof Function || options instanceof Collection) {
       collection = options;
       options = undefined;
