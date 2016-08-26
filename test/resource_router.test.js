@@ -15,13 +15,14 @@ const Comment = Model.extend({
 const Post = Model.extend({
   tableName: 'posts',
   hasTimestamps: true,
-  validate: {
-    title: Joi.string().required(),
-    content: Joi.string().required()
-  },
   comments(){
     return this.hasMany(Comment);
   }
+}, {
+  fields: {
+    title: Joi.string().required(),
+    content: Joi.string().required()
+  },
 });
 
 const setup = (config) => {
@@ -107,14 +108,14 @@ suite(({request, test, expect})=>{
 
 suite(({ResourceTester, request, test, expect})=>{
   let tester = new ResourceTester(server, '/posts');
-  tester.create({ title: 'title', content: 'content'}, req => req.set('X-Header', 'haha'))
+  tester.create({title:'abc', content:'haha'}, req => req.set('X-Header', 'haha'))
         .test(res => {
           expect(res.body.title).equals('Hehe');
           expect(res.body.haha).equals('yes');
         });
   test('should return 422', t => request(server).post('/posts')
-                                                .send({ content: 'content'})
-                                                .then()
+                                                .send({ title:'abc' })
+                                                .then(res => expect(res).to.have.status(422))
                                                 .catch(e => expect(e).to.have.status(422)));
   tester.read(req => req.set('X-Header', 'haha')).test();
   tester.read(100).catch(e => expect(e.actual).equals(204)).test();

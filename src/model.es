@@ -21,6 +21,7 @@ function koapi_base_model_plugin (bookshelf) {
   bookshelf.Model = M.extend({
     initialize: function () {
       M.prototype.initialize.call(this);
+      this.validate = this.validate || this.constructor.fields;
 
       this.on('saving', this.validateDuplicates);
       this.on('destroying', this.destroyDependents);
@@ -76,8 +77,8 @@ const Model = {
         .plugin(soft_delete)
         .plugin(mask)
         .plugin(uuid)
+        .plugin(modelbase.pluggable)
         .plugin(koapi_base_model_plugin)
-        .plugin(modelbase.pluggable);
     }
   },
   extend(protos, statics){
