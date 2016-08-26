@@ -88,7 +88,7 @@ export class ResourceRouter extends Router {
 
     let request_item = Joi.object(fields).label(title).description(description);
     let response_item = Joi.object(Object.assign({
-      id: Joi.number().integer().min(1).required(),
+      [id]: Joi.number().integer().min(1).required(),
       created_at: Joi.date().required(),
       updated_at: Joi.date().required()
     }, _.mapValues(fields, v => v.required()))).label(title).description(description);
@@ -119,7 +119,7 @@ export class ResourceRouter extends Router {
             result['read'] = _schema(null, response_item);
           break;
           case 'update':
-            let req = Joi.object(_.mapValues(fields, v => v.optional())).label(title).description(description);
+            let req = Joi.object(_.omit(_.mapValues(fields, v => v.optional()), [id, 'created_at', 'updated_at'])).label(title).description(description);
             schema = _schema(req, response_item);
             break;
           case 'destroy':
