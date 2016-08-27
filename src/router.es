@@ -64,11 +64,11 @@ export class ResourceRouter extends Router {
     super(options);
     this.collection = collection;
     if (!_.isFunction(collection)) {
-      options.name = options.name || collection.tableName();
       options.model= options.model || collection.model;
       options.id   = options.id || options.model.prototype.idAttribute;
       this.collection = ctx => collection;
     }
+    options.name = options.name || options.model.prototype.tableName;
     options.fields = options.fields || (options.model ? options.model.fields : undefined);
     options.root = options.root || '/' + options.name;
     options.title = options.title || options.name;
