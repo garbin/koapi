@@ -82,7 +82,9 @@ export function initialize(knex_config) {
   }
 }
 
-export default function () {
+export function extend() {
   if (!bookshelf) throw new Error('You should call initialize before');
   return bookshelf.Model.extend.apply(bookshelf.Model, arguments);
 }
+
+export default extend;

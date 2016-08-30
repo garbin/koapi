@@ -23,6 +23,25 @@ Router.define = function (options) {
   return router;
 }
 
+Router.prototype.schema = function () {
+  return null;
+}
+
+export function schema(request, response) {
+  let request_schema = request ? joi_to_json_schema(request) : {};
+  let response_schema = response ? joi_to_json_schema(response) : {};
+  return {
+    schema:{
+      request: request_schema,
+      response: response_schema
+    },
+    example:{
+      request: !_.isEmpty(request_schema) ? jsf(request_schema) : {},
+      response: !_.isEmpty(response_schema) ? jsf(response_schema) : {}
+    }
+  }
+}
+
 function parse_args(ori_args, option_defaults = {}) {
   let args = Array.prototype.slice.call(ori_args);
   let none = async (ctx, next) => await next();
@@ -97,42 +116,28 @@ export class ResourceRouter extends Router {
 
     let request_item = Joi.object(_.omit(fields, _.keys(base_joi))).label(title).description(description);
     let response_item = Joi.object(Object.assign({}, base_joi, _.mapValues(fields, v => v.required()))).label(title).description(description);
-    function _schema(request, response) {
-      let request_schema = request ? joi_to_json_schema(request) : {};
-      let response_schema = response ? joi_to_json_schema(response) : {};
-      return {
-        schema:{
-          request: request_schema,
-          response: response_schema
-        },
-        example:{
-          request: !_.isEmpty(request_schema) ? jsf(request_schema) : {},
-          response: !_.isEmpty(response_schema) ? jsf(response_schema) : {}
-        }
-      }
-    }
     let result = {};
     _.forIn(this.methods, (v, k) => {
       if (v) {
-        let schema;
+        let s;
         switch (k) {
           case 'create':
-            schema = _schema(request_item, response_item);
+            s = schema(request_item, response_item);
           break;
           case 'read':
-            result['list'] = _schema(null, Joi.array().items(response_item));
-            result['read'] = _schema(null, response_item);
+            result['list'] = schema(null, Joi.array().items(response_item));
+            result['read'] = schema(null, response_item);
           break;
           case 'update':
             let req = Joi.object(_.omit(_.mapValues(fields, v => v.optional()), _.keys(base_joi))).label(title).description(description);
-            schema = _schema(req, response_item);
+            s = schema(req, response_item);
             break;
           case 'destroy':
-            schema = _schema(null, null);
+            s = schema(null, null);
           break;
         }
-        if (schema) {
-          result[k] = schema;
+        if (s) {
+          result[k] = s;
         }
       }
     });
