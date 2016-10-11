@@ -1,12 +1,12 @@
 // Update with your config settings.
 
 exports.development = exports.production = exports.test = {
-  // debug:true, 
+  // debug:true,
   client: 'postgres',
   connection: {
-    host     : 'ubuntu',
+    host     : 'localhost',
     user     : 'postgres',
-    password : '1234',
+    password : '123456',
     database : 'koapi_test',
     charset  : 'utf8'
   },

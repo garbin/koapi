@@ -125,9 +125,9 @@ export default class Koapi {
   listen(port, cb){
     if (_.isFunction(port)) {
       cb = port;
-      port = this.config.port || null;
+      port = this.config.port || 0;
     } else {
-      port = port || this.config.port;
+      port = port || this.config.port || 0;
       cb = cb || function(){};
     }
     return this.koa.listen(port, cb);
@@ -163,6 +163,7 @@ export default class Koapi {
     this.routers(config.routers);
     this.use(config.middlewares.after);
     this.serve(config.serve);
+    this.config = config;
 
     return this;
   }
