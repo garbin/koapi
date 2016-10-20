@@ -2,7 +2,7 @@ import Koa from 'koa'
 import _ from 'lodash'
 import Router from 'koa-router'
 import koa_logger from 'koa-logger'
-import cors from 'koa-cors'
+import cors from 'kcors'
 import throttle from 'koa-ratelimit'
 import serve from 'koa-static'
 import compress from 'koa-compress'
@@ -34,13 +34,13 @@ export default class Koapi {
   }
 
   debug(on){
-    if (on) this.koa.use(convert(koa_logger()));
+    if (on) this.koa.use(koa_logger());
 
     return this;
   }
 
   cors(options) {
-    if (options) this.koa.use(convert(cors(options)));
+    if (options) this.koa.use(cors(options));
 
     return this;
   }
@@ -52,7 +52,7 @@ export default class Koapi {
   }
 
   serve(config){
-    if (config) this.koa.use(convert(serve(config.root, config.options)));
+    if (config) this.koa.use(serve(config.root, config.options));
 
     return this;
   }
