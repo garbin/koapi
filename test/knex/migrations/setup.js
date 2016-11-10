@@ -15,9 +15,15 @@ exports.up = function(knex, Promise) {
     table.integer('post_id');
     table.timestamp('created_at').notNullable().defaultTo(knex.raw('CURRENT_TIMESTAMP'));
     table.timestamp('updated_at').notNullable().defaultTo(knex.raw('CURRENT_TIMESTAMP'));
+  }).createTable('categories', function (table) {
+    table.increments('id').primary();
+    table.string('category_name');
+  }).createTable('category2post', function (table) {
+    table.integer('category_id');
+    table.integer('post_id');
   });
 };
 
 exports.down = function(knex, Promise) {
-  return knex.schema.dropTable('posts').dropTable('comments');
+  return knex.schema.dropTable('posts').dropTable('comments').dropTable('categories').dropTable('category2post');
 };

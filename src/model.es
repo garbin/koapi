@@ -8,6 +8,37 @@ import soft_delete from 'bookshelf-paranoia'
 import mask from 'bookshelf-mask'
 import uuid from 'bookshelf-uuid'
 
+export let bookshelf;
+
+export function relation(Model, relations = {}) {
+
+  return Model;
+}
+
+export function initialize(knex_config) {
+  if (!bookshelf) {
+    bookshelf = Bookshelf(knex(knex_config))
+                  .plugin('registry')
+                  .plugin('virtuals')
+                  .plugin('visibility')
+                  .plugin('pagination')
+                  .plugin(json_columns)
+                  .plugin(cascade_delete)
+                  .plugin(soft_delete)
+                  .plugin(mask)
+                  .plugin(uuid)
+                  .plugin(modelbase.pluggable)
+                  .plugin(koapi_base_model_plugin)
+  }
+}
+
+export function extend() {
+  if (!bookshelf) throw new Error('You should call initialize before');
+  return bookshelf.Model.extend.apply(bookshelf.Model, arguments);
+}
+
+export default extend;
+
 
 function koapi_base_model_plugin (bookshelf) {
   var M = bookshelf.Model;
@@ -22,28 +53,16 @@ function koapi_base_model_plugin (bookshelf) {
     initialize: function () {
       M.prototype.initialize.call(this);
       this.validate = this.validate || this.constructor.fields;
-
       this.on('saving', this.validateDuplicates);
-      this.on('destroying', this.destroyDependents);
     },
-    destroyDependents(){
-      return new Promise((resolve, reject)=>{
-        if (this.constructor.dependents) {
-          Promise.all(this.constructor.dependents.map((depend)=>{
-            return new Promise((_resolve, _reject)=>{
-              if (this[depend]().relatedData.type == 'belongsToMany') {
-                this[depend]().detach().then(_resolve).catch(_reject);
-              } else {
-                this.load(depend).then(()=>{
-                  this.related(depend).invokeThen('destroy').then(_resolve).catch(_reject);
-                }).catch(_reject);
-              }
-            });
-          })).then(resolve).catch(reject);
-        } else {
-          resolve();
-        }
-      });
+    join(name){
+      let relation = this[name]().relatedData;
+      if (['belongsTo', 'belongsToMany', 'hasOne'].includes(relation.type)) {
+        let target = relation.target.forge();
+        let reverse = this.tableName;
+        this.query(qb => target[reverse]().relatedData.joinClauses(qb));
+      }
+      return this;
     },
     validateDuplicates: function (model, attrs, options) {
       return new Promise((resolve, reject)=>{
@@ -62,29 +81,3 @@ function koapi_base_model_plugin (bookshelf) {
     }
   });
 };
-
-export let bookshelf;
-
-export function initialize(knex_config) {
-  if (!bookshelf) {
-    bookshelf = Bookshelf(knex(knex_config))
-                  .plugin('registry')
-                  .plugin('virtuals')
-                  .plugin('visibility')
-                  .plugin('pagination')
-                  .plugin(json_columns)
-                  // .plugin(cascade_delete)
-                  .plugin(soft_delete)
-                  .plugin(mask)
-                  .plugin(uuid)
-                  .plugin(modelbase.pluggable)
-                  .plugin(koapi_base_model_plugin)
-  }
-}
-
-export function extend() {
-  if (!bookshelf) throw new Error('You should call initialize before');
-  return bookshelf.Model.extend.apply(bookshelf.Model, arguments);
-}
-
-export default extend;

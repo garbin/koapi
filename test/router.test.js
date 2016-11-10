@@ -1,5 +1,5 @@
 import Koapi, { middlewares, ResourceRouter } from '../src'
-import extend, { initialize } from '../src/model'
+import { bookshelf, initialize, relation } from '../src/model'
 import suite from '../src/test'
 import knex_config from './knex/knexfile'
 import Joi from 'joi'
@@ -7,23 +7,63 @@ import _ from 'lodash'
 
 initialize(knex_config.test);
 
-const Comment = extend({
-  tableName: 'comments',
-  hasTimestamps: true
-});
+class Category extends bookshelf.Model {
+  get tableName(){ return 'categories' };
+  get hasTimestamps() { return false }
+  posts(){
+    return this.belongsToMany(Post, 'category2post').withPivot(['category_id']);
+  }
+}
 
-const Post = extend({
-  tableName: 'posts',
-  hasTimestamps: true,
+class Comment extends bookshelf.Model {
+  get tableName(){ return 'comments' }
+  get hasTimestamps() { return false }
+}
+
+class Post extends bookshelf.Model {
+  static fields = {
+    title: Joi.string().required(),
+    content: Joi.string().required()
+  };
+  static dependents = ['comments'];
+  get tableName(){ return 'posts' };
+  get hasTimestamps() { return true; }
   comments(){
     return this.hasMany(Comment);
   }
-}, {
-  fields: {
-    title: Joi.string().required(),
-    content: Joi.string().required()
-  },
-});
+  categories(){
+    return this.belongsToMany(Category, 'category2post');
+  }
+}
+
+// const Category = extend({
+//   tableName: 'categories',
+//   hasTimestamps: false,
+//   posts(){
+//     return this.belongsToMany(Post, 'category2post');
+//   }
+// });
+//
+// const Comment = extend({
+//   tableName: 'comments',
+//   hasTimestamps: true
+// });
+//
+// const Post = extend({
+//   tableName: 'posts',
+//   hasTimestamps: true,
+//   comments(){
+//     return this.hasMany(Comment);
+//   },
+//   categories(){
+//     return this.belongsToMany(Category, 'category2post')
+//   }
+// }, {
+//   fields: {
+//     title: Joi.string().required(),
+//     content: Joi.string().required()
+//   },
+// });
 
 const setup = (config) => {
   let app = new Koapi();
@@ -46,8 +86,9 @@ let {server, app} = setup(app => {
         ctx.body.haha = 'yes';
       });
       router.read({
+        joins: ['categories'],
         sortable: ['created_at'],
-        filterable: ['user_id'],
+        filterable: [ 'user_id', 'category_id' ],
         searchable: ['title', 'content']
       });
       router.update();
@@ -82,8 +123,9 @@ suite(({request, test, expect})=>{
         ctx.body.haha = 'yes';
       });
       router.read({
+        joins: ['categories'],
         sortable: ['created_at'],
-        filterable: ['user_id'],
+        filterable: ['user_id', 'caetgory_id'],
         searchable: ['title', 'content']
       });
       router.update();
@@ -122,6 +164,21 @@ suite(({ResourceTester, request, test, expect})=>{
   tester.read(1, req => req.set('X-Header', 'haha')).test();
   tester.update(1, {title: 'new title'}).test();
   tester.destroy(2).test();
+  tester.read(null, {
+    filters:{
+      category_id: [1, 2]
+    }
+  }).test(res => {
+    expect(res.body).to.not.be.empty;
+  });
+  tester.read(null, {
+    filters:{
+      category_id: 2
+    },
+    q:'doestnotexists'
+  }).test(res => {
+    expect(res.body).to.be.empty;
+  });
   tester.read(null, {
     filters:{
       user_id:2

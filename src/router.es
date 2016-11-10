@@ -165,6 +165,7 @@ export class ResourceRouter extends Router {
   }
   read(){
     let {middlewares, options} = parse_args(arguments, {
+      joins: [],
       sortable: [],
       searchable: [],
       filterable: [],
@@ -175,43 +176,62 @@ export class ResourceRouter extends Router {
     let {collection, options:{id}, pattern} = this;
     this.methods.read = true;
     // read list
-    this.get(pattern.root, convert(paginate(options.pagination)), compose(middlewares), async (ctx) => {
-      // console.log(collection(ctx).relatedData);
-      let query = collection(ctx).model.forge();
-      if (collection(ctx).relatedData) {
-        query = query.where({[collection(ctx).relatedData.key('foreignKey')]:collection(ctx).relatedData.parentId})
-      }
-      if (options.sortable) {
-        let order_by = _.get(ctx, 'request.query.sort', _.first(options.sortable));
-        if (_.includes(options.sortable, _.trimStart(order_by, '-'))) {
-          query = query.orderBy(order_by);
-        }
-      }
-      if (options.filterable) {
-        let filters = _.get(ctx, 'request.query.filters');
-        _.mapKeys(filters, (v, k) => {
-          query = query.query(q => q.where(k, '=', v));
-        });
-      }
-      if (options.searchable) {
-        let keywords = _.get(ctx, 'request.query.q');
-        if (keywords) {
-          query = query.query(q => {
-            q = q.where(function(){
-              options.searchable.forEach((field, index) => {
-                this[index ? 'orWhere' : 'where'](field, 'LIKE', '%' + keywords + '%');
-              });
-            });
+    this.get(pattern.root,
+             convert(paginate(options.pagination)),
+             compose(middlewares),
+             async (ctx) => {
+               let query = collection(ctx).model.forge();
+               if (collection(ctx).relatedData) {
+                 query = query.where({[collection(ctx).relatedData.key('foreignKey')]:collection(ctx).relatedData.parentId})
+               }
+               if (options.joins) {
+                 options.joins.forEach(relation => query.join(relation));
+               }
+               if (options.sortable) {
+                 let order_by = _.get(ctx, 'request.query.sort', _.first(options.sortable));
+                 if (_.includes(options.sortable, _.trimStart(order_by, '-'))) {
+                   query = query.orderBy(order_by);
+                 }
+               }
+               if (options.filterable) {
+                 let filters = options.filterable.map(filter => {
+                   return _.isString(filter) ? (query, filters) => {
+                     if (filters[filter] === undefined) {
+                       return query;
+                     }
+                     return query.query(qb => {
+                       if (_.isArray(filters[filter])) {
+                         return qb.whereIn(filter, filters[filter]);
+                       } else {
+                         return qb.where(filter, '=', filters[filter]);
+                       }
+                     });
+                   } : filter;
+                 });
+                 filters.forEach(filter => {
+                   query = filter(query, ctx.request.query.filters || {});
+                 });
+               }
+               if (options.searchable) {
+                 let keywords = _.get(ctx, 'request.query.q');
+                 if (keywords) {
+                   query = query.query(q => {
+                     q = q.where(function(){
+                       options.searchable.forEach((field, index) => {
+                         this[index ? 'orWhere' : 'where'](field, 'LIKE', '%' + keywords + '%');
+                       });
+                     });
 
-            return q;
-          });
-        }
-      }
-      let resources = await query.fetchPage(Object.assign({}, ctx.pagination, options.fetch));
+                     return q;
+                   });
+                 }
+               }
+               let resources = await query.fetchPage(Object.assign({}, ctx.pagination, options.fetch));
 
-      ctx.body = resources.models;
-      ctx.pagination.length = resources.pagination.rowCount;
-    });
+               ctx.body = resources.models;
+               ctx.pagination.length = resources.pagination.rowCount;
+             });
+
     // read item
     this.get(pattern.item, compose(middlewares) || none, async (ctx) => {
       ctx.body = await collection(ctx)
@@ -220,6 +240,8 @@ export class ResourceRouter extends Router {
         required: true,
       }, options.fetchItem));
     });
+
+
     return this;
   }
   update(){
