@@ -180,7 +180,7 @@ export class ResourceRouter extends Router {
              convert(paginate(options.pagination)),
              compose(middlewares),
              async (ctx) => {
-               let query = collection(ctx).model.forge();
+               let query = ctx.state.query || collection(ctx).model.forge();
                if (collection(ctx).relatedData) {
                  query = query.where({[collection(ctx).relatedData.key('foreignKey')]:collection(ctx).relatedData.parentId})
                }
