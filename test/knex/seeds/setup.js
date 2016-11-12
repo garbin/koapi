@@ -1,4 +1,7 @@
 exports.seed = function(knex, Promise) {
+  const model = require('../../../src/model');
+  model.initialize(knex);
+  console.log(model.bookshelf);
   return Promise.join(
     // Deletes ALL existing entries
     knex('posts').del(),

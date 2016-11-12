@@ -10,35 +10,30 @@ import uuid from 'bookshelf-uuid'
 
 export let bookshelf;
 
-export function relation(Model, relations = {}) {
-
-  return Model;
-}
-
 export function initialize(knex_config) {
   if (!bookshelf) {
-    bookshelf = Bookshelf(knex(knex_config))
-                  .plugin('registry')
-                  .plugin('virtuals')
-                  .plugin('visibility')
-                  .plugin('pagination')
-                  .plugin(json_columns)
-                  .plugin(cascade_delete)
-                  .plugin(soft_delete)
-                  .plugin(mask)
-                  .plugin(uuid)
-                  .plugin(modelbase.pluggable)
-                  .plugin(koapi_base_model_plugin)
+    bookshelf = Bookshelf(
+      knex_config instanceof knex.constructor ?
+      knex_config :
+      knex(knex_config)
+    ).plugin('registry')
+     .plugin('virtuals')
+     .plugin('visibility')
+     .plugin('pagination')
+     .plugin(json_columns)
+     .plugin(cascade_delete)
+     .plugin(soft_delete)
+     .plugin(mask)
+     .plugin(uuid)
+     .plugin(modelbase.pluggable)
+     .plugin(koapi_base_model_plugin)
   }
 }
 
-export function extend() {
+export default function extend() {
   if (!bookshelf) throw new Error('You should call initialize before');
   return bookshelf.Model.extend.apply(bookshelf.Model, arguments);
 }
-
-export default extend;
-
 
 function koapi_base_model_plugin (bookshelf) {
   var M = bookshelf.Model;
