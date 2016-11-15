@@ -68,23 +68,24 @@ function koapi_base_model_plugin (bookshelf) {
 
     format(attrs){
       if (super.format)  attrs = super.format(attrs);
-      _.forIn(this._format, (v, k)=>{
-        if (attrs[k] !== undefined) {
-          attrs[k] = v.formatter(attrs[k]);
+      return _.reduce(attrs, (formatted, v, k) => {
+        formatted[k] = v;
+        if (_.get(this, `_format.${k}.formatter`)) {
+          formatted[k] = this._format[k].formatter(v);
         }
-      });
-
-      return attrs;
+        return formatted;
+      }, {});
     },
 
     parse(attrs){
       if(super.parse) attrs = super.parse(attrs);
-      _.forIn(this._format, (v, k)=>{
-        if (attrs[k] !== undefined) {
-          attrs[k] = v.parser(attrs[k]);
+      return _.reduce(attrs, (parsed, v, k) => {
+        parsed[k] = v;
+        if (_.get(this, `_format.${k}.parser`)) {
+          parsed[k] = this._format[k].parser(v);
         }
-      });
-      return attrs;
+        return parsed;
+      }, {});
     },
 
     join(name){
