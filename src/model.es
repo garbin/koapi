@@ -53,7 +53,7 @@ function koapi_base_model_plugin (bookshelf) {
           case 'json':
             this._format[k] = {
               formatter: JSON.stringify,
-              parser: JSON.parse
+              parser: v => typeof v === 'string' ? JSON.parse(v) : v
             };
             break;
           default:

@@ -1,7 +1,6 @@
 exports.seed = function(knex, Promise) {
   const model = require('../../../src/model');
   model.initialize(knex);
-  console.log(model.bookshelf);
   return Promise.join(
     // Deletes ALL existing entries
     knex('posts').del(),
@@ -11,7 +10,7 @@ exports.seed = function(knex, Promise) {
 
     // Inserts seed entries
     knex('posts').insert([
-      {title: 'Title', content:'Content', user_id:1},
+      {title: 'Title', content:'Content', tags:JSON.stringify(['A', 'B']), user_id:1},
       {title: 'Title', content:'Content', user_id:1}
     ]),
     knex('comments').insert([
