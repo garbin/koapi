@@ -2,7 +2,6 @@ import Bookshelf from 'bookshelf'
 import modelbase from 'bookshelf-modelbase'
 import _ from 'lodash';
 import knex from 'knex'
-import json_columns from 'bookshelf-json-columns'
 import cascade_delete from 'bookshelf-cascade-delete'
 import soft_delete from 'bookshelf-paranoia'
 import mask from 'bookshelf-mask'
