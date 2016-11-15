@@ -20,7 +20,6 @@ export function initialize(knex_config) {
      .plugin('virtuals')
      .plugin('visibility')
      .plugin('pagination')
-     .plugin(json_columns)
      .plugin(cascade_delete)
      .plugin(soft_delete)
      .plugin(mask)
@@ -48,8 +47,46 @@ function koapi_base_model_plugin (bookshelf) {
     initialize: function () {
       M.prototype.initialize.call(this);
       this.validate = this.validate || this.constructor.fields;
+      this._format = {};
+      _.forIn(this.constructor.format, (v, k)=>{
+        switch (v) {
+          case 'json':
+            this._format[k] = {
+              formatter: JSON.stringify,
+              parser: JSON.parse
+            };
+            break;
+          default:
+            if (v.formatter && v.parser) {
+              this._format[k] = v;
+            }
+        }
+      });
+
       this.on('saving', this.validateDuplicates);
     },
+
+    format(attrs){
+      if (super.format)  attrs = super.format(attrs);
+      _.forIn(this._format, (v, k)=>{
+        if (attrs[k] !== undefined) {
+          attrs[k] = v.formatter(attrs[k]);
+        }
+      });
+
+      return attrs;
+    },
+
+    parse(attrs){
+      if(super.parse) attrs = super.parse(attrs);
+      _.forIn(this._format, (v, k)=>{
+        if (attrs[k] !== undefined) {
+          attrs[k] = v.parser(attrs[k]);
+        }
+      });
+      return attrs;
+    },
+
     join(name){
       let relation = this[name]().relatedData;
       if (['belongsTo', 'belongsToMany', 'hasOne'].includes(relation.type)) {

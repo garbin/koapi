@@ -23,7 +23,11 @@ class Comment extends bookshelf.Model {
 class Post extends bookshelf.Model {
   static fields = {
     title: Joi.string().required(),
-    content: Joi.string().required()
+    content: Joi.string().required(),
+    tags: Joi.array()
+  };
+  static format = {
+    tags: 'json'
   };
   static dependents = ['comments'];
   get tableName(){ return 'posts' };
@@ -150,10 +154,11 @@ suite(({request, test, expect})=>{
 
 suite(({ResourceTester, request, test, expect})=>{
   let tester = new ResourceTester(server, '/posts');
-  tester.create({title:'abc', content:'haha'}, req => req.set('X-Header', 'haha'))
+  tester.create({title:'abc', content:'haha', tags:['a', 'b']}, req => req.set('X-Header', 'haha'))
         .test(res => {
           expect(res.body.title).equals('Hehe');
           expect(res.body.haha).equals('yes');
+          expect(res.body.tags).to.be.instanceof(Array);
         });
   test('should return 422', t => request(server).post('/posts')
                                                 .send({ title:'abc' })
