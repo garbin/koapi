@@ -58,6 +58,11 @@ function koapi_base_model_plugin (bookshelf) {
           default:
             if (v.formatter && v.parser) {
               this._format[k] = v;
+            } else if (typeof v === 'function') {
+              this._format[k] = {
+                formatter: v,
+                parser: a => a,
+              }
             }
         }
       });
