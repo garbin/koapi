@@ -18,6 +18,7 @@ class Category extends bookshelf.Model {
 class Comment extends bookshelf.Model {
   get tableName(){ return 'comments' }
   get hasTimestamps() { return false }
+  get unique() { return ['title'] }
 }
 
 class Post extends bookshelf.Model {
@@ -206,4 +207,8 @@ suite(({ResourceTester, expect})=>{
   }).test(res => {
     expect(res.body.post_id).equals(1);
   });
+  tester.create({
+    title: 'Title1',
+    content: 'abc',
+  }).catch(res => expect(res).to.have.status(409)).test();
 });

@@ -1,11 +1,11 @@
 import Bookshelf from 'bookshelf'
-import modelbase from 'bookshelf-modelbase'
 import _ from 'lodash';
 import knex from 'knex'
 import cascade_delete from 'bookshelf-cascade-delete'
 import soft_delete from 'bookshelf-paranoia'
 import mask from 'bookshelf-mask'
 import uuid from 'bookshelf-uuid'
+import Joi from 'joi'
 
 export let bookshelf;
 
@@ -23,7 +23,6 @@ export function initialize(knex_config) {
      .plugin(soft_delete)
      .plugin(mask)
      .plugin(uuid)
-     .plugin(modelbase.pluggable)
      .plugin(koapi_base_model_plugin)
   }
 }
@@ -46,6 +45,20 @@ function koapi_base_model_plugin (bookshelf) {
     initialize: function () {
       M.prototype.initialize.call(this);
       this.validate = this.validate || this.constructor.fields;
+      if (this.validate) {
+        var baseValidation = {
+          // id might be number or string, for optimization
+          id: Joi.any().optional(),
+          created_at: Joi.date().optional(),
+          updated_at: Joi.date().optional()
+        }
+
+        this.validate = this.validate.isJoi
+        ? this.validate.keys(baseValidation)
+        : Joi.object().keys(Object.assign(baseValidation, this.validate));
+        this.on('saving', this.validateBeforeSave)
+      }
+
       this._format = {};
       _.forIn(this.constructor.format, (v, k)=>{
         switch (v) {
@@ -66,6 +79,7 @@ function koapi_base_model_plugin (bookshelf) {
             }
         }
       });
+
 
       this.on('saving', this.validateDuplicates);
     },
@@ -101,20 +115,144 @@ function koapi_base_model_plugin (bookshelf) {
       }
       return this;
     },
-    validateDuplicates: function (model, attrs, options) {
-      return new Promise((resolve, reject)=>{
-        if (this.unique && !_.isEmpty(_.pick(this.changed, this.unique))) {
-          this.constructor.where(_.pick(this.changed, this.unique)).fetch().then((exists)=>{
-            if (exists) {
-              reject(new DuplicateError('Duplicate'));
-            } else {
-              resolve();
-            }
-          }).catch(reject);
-        } else {
-          resolve();
+    async validateBeforeSave(model, attrs, options) {
+      let validation;
+      // model is not new or update method explicitly set
+      if ((model && !model.isNew()) || (options && (options.method === 'update' || options.patch === true))) {
+        let schemaKeys = this.validate._inner.children.map(function (child) {
+          return child.key
+        })
+        let presentKeys = Object.keys(attrs)
+        let optionalKeys = _.difference(schemaKeys, presentKeys)
+        // only validate the keys that are being updated
+        validation = Joi.validate(attrs, this.validate.optionalKeys(optionalKeys))
+      } else {
+        validation = Joi.validate(this.attributes, this.validate)
+      }
+
+      if (validation.error) {
+        validation.error.tableName = this.tableName
+
+        throw validation.error
+      } else {
+        this.set(validation.value);
+        return validation.value
+      }
+    },
+    async validateDuplicates(model, attrs, options) {
+      if (this.unique && !_.isEmpty(_.pick(this.changed, this.unique))) {
+        let exists = await this.constructor.where(_.pick(this.changed, this.unique)).fetch();
+        if (exists) {
+          throw new DuplicateError('Duplicate');
         }
-      });
+      }
+    }
+  }, {
+    /**==============from bookshelf-modelbase==============**/
+    /*** https://github.com/bsiddiqui/bookshelf-modelbase ***/
+    /**
+    * Select a collection based on a query
+    * @param {Object} [query]
+    * @param {Object} [options] Options used of model.fetchAll
+    * @return {Promise(bookshelf.Collection)} Bookshelf Collection of Models
+    */
+    findAll(filter, options) {
+      return this.forge().where(Object.assign({}, filter)).fetchAll(options)
+    },
+
+    /**
+    * Find a model based on it's ID
+    * @param {String} id The model's ID
+    * @param {Object} [options] Options used of model.fetch
+    * @return {Promise(bookshelf.Model)}
+    */
+    findById(id, options) {
+      return this.findOne({ [this.prototype.idAttribute]: id }, options)
+    },
+
+    /**
+    * Select a model based on a query
+    * @param {Object} [query]
+    * @param {Object} [options] Options for model.fetch
+    * @param {Boolean} [options.require=false]
+    * @return {Promise(bookshelf.Model)}
+    */
+    findOne(query, options) {
+      options = Object.assign({ require: true }, options)
+      return this.forge(query).fetch(options)
+    },
+
+    /**
+    * Insert a model based on data
+    * @param {Object} data
+    * @param {Object} [options] Options for model.save
+    * @return {Promise(bookshelf.Model)}
+    */
+    create(data, options) {
+      return this.forge()
+      .save(data, options)
+    },
+
+    /**
+    * Update a model based on data
+    * @param {Object} data
+    * @param {Object} options Options for model.fetch and model.save
+    * @param {String|Integer} options.id The id of the model to update
+    * @param {Boolean} [options.patch=true]
+    * @param {Boolean} [options.require=true]
+    * @return {Promise(bookshelf.Model)}
+    */
+    update(data, options) {
+      options = Object.assign({ patch: true, require: true }, options)
+      return this.forge({ [this.prototype.idAttribute]: options.id }).fetch(options)
+      .then(function (model) {
+        return model ? model.save(data, options) : undefined
+      })
+    },
+
+    /**
+    * Destroy a model by id
+    * @param {Object} options
+    * @param {String|Integer} options.id The id of the model to destroy
+    * @param {Boolean} [options.require=false]
+    * @return {Promise(bookshelf.Model)} empty model
+    */
+    destroy(options) {
+      options = Object.assign({ require: true }, options)
+      return this.forge({ [this.prototype.idAttribute]: options.id })
+      .destroy(options)
+    },
+
+    /**
+    * Select a model based on data and insert if not found
+    * @param {Object} data
+    * @param {Object} [options] Options for model.fetch and model.save
+    * @param {Object} [options.defaults] Defaults to apply to a create
+    * @return {Promise(bookshelf.Model)} single Model
+    */
+    findOrCreate(data, options) {
+      return this.findOne(data, Object.assign(options, { require: false }))
+      .bind(this)
+      .then(function (model) {
+        var defaults = options && options.defaults
+        return model || this.create(Object.assign(defaults, data), options)
+      })
+    },
+
+    /**
+    * Select a model based on data and update if found, insert if not found
+    * @param {Object} selectData Data for select
+    * @param {Object} updateData Data for update
+    * @param {Object} [options] Options for model.save
+    */
+    upsert(selectData, updateData, options) {
+      return this.findOne(selectData, Object.assign(options, { require: false }))
+      .bind(this)
+      .then(function (model) {
+        return model
+        ? model.save(updateData, Object.assign({ patch: true }, options))
+        : this.create(Object.assign(selectData, updateData), options)
+      })
     }
   });
 };

@@ -14,8 +14,8 @@ exports.seed = function(knex, Promise) {
       {title: 'Title', content:'Content', user_id:1}
     ]),
     knex('comments').insert([
-      {title: 'Title', content:'Content', user_id:1, post_id:1 },
-      {title: 'Title', content:'Content', user_id:1, post_id:2 }
+      {title: 'Title1', content:'Content', user_id:1, post_id:1 },
+      {title: 'Title2', content:'Content', user_id:1, post_id:2 }
     ]),
     knex('categories').insert([
       {category_name: 'Test'},
