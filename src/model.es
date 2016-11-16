@@ -46,16 +46,14 @@ function koapi_base_model_plugin (bookshelf) {
       M.prototype.initialize.call(this);
       this.validate = this.validate || this.constructor.fields;
       if (this.validate) {
-        var baseValidation = {
+        let baseValidation = Joi.object().keys({
           // id might be number or string, for optimization
           id: Joi.any().optional(),
           created_at: Joi.date().optional(),
           updated_at: Joi.date().optional()
-        }
+        });
 
-        this.validate = this.validate.isJoi
-        ? this.validate.keys(baseValidation)
-        : Joi.object().keys(Object.assign(baseValidation, this.validate));
+        this.validate = baseValidation.concat(this.validate.isJoi ? this.validate : Joi.object().keys(this.validate));
         this.on('saving', this.validateBeforeSave)
       }
 
