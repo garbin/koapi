@@ -117,9 +117,7 @@ function koapi_base_model_plugin (bookshelf) {
       let validation;
       // model is not new or update method explicitly set
       if ((model && !model.isNew()) || (options && (options.method === 'update' || options.patch === true))) {
-        let schemaKeys = this.validate._inner.children.map(function (child) {
-          return child.key
-        })
+        let schemaKeys = this.validate._inner.children.map(child => child.key);
         let presentKeys = Object.keys(attrs)
         let optionalKeys = _.difference(schemaKeys, presentKeys)
         // only validate the keys that are being updated

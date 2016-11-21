@@ -156,7 +156,7 @@ export class ResourceRouter extends Router {
         ctx.state.resource = await collection(ctx).create(attributes);
       } else {
         ctx.state.resource = collection(ctx).model.forge();
-        await ctx.state.resource.save(attributes);
+        await ctx.state.resource.save(attributes, Object.assign({}, options.save || {}));
       }
       ctx.body = ctx.state.resource;
       ctx.status = 201;
@@ -251,7 +251,7 @@ export class ResourceRouter extends Router {
     const update = async (ctx) => {
       let attributes = ctx.state.attributes || ctx.request.body;
       ctx.state.resource = (await collection(ctx).query(q => q.where({[id]:ctx.params[id]})).fetch({required:true})).first();
-      await ctx.state.resource.save(attributes, { patch: true });
+      await ctx.state.resource.save(attributes, Object.assign({ patch: true }, options.save || {}));
       if (options.after)  await options.after(ctx);
       ctx.body = ctx.state.resource;
       ctx.status = 202;
@@ -269,10 +269,8 @@ export class ResourceRouter extends Router {
     this.del(pattern.item, compose(middlewares), async (ctx) => {
       ctx.state.resource = await collection(ctx).query(q => q.where({[id]:ctx.params[id]})).fetchOne({require:true});
       ctx.state.deleted  = ctx.state.resource.toJSON();
-      // ctx.state.resource = await collection(ctx).model.forge().where({[id]:ctx.params[id]});
 
-      // ctx.state.resource = collection(ctx).model.forge({[id]:ctx.params[id]});
-      await ctx.state.resource.destroy();
+      await ctx.state.resource.destroy(Object.assign({}, options.destroy || {}));
       if (options.after) await options.after(ctx);
       ctx.status = 204;
     });
