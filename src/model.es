@@ -116,7 +116,6 @@ function koapi_base_model_plugin (bookshelf) {
     async validateBeforeSave(model, attrs, options) {
       let validation;
       // model is not new or update method explicitly set
-      console.log(options);
       if ((model && !model.isNew() && options.method !== 'insert') || (options && (options.method === 'update' || options.patch === true))) {
         let schemaKeys = this.validate._inner.children.map(child => child.key);
         let presentKeys = Object.keys(attrs)
