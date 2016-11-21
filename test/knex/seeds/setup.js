@@ -10,8 +10,8 @@ exports.seed = function(knex, Promise) {
 
     // Inserts seed entries
     knex('posts').insert([
-      {title: 'Title', content:'Content', tags:JSON.stringify(['A', 'B']), user_id:1},
-      {title: 'Title', content:'Content', user_id:1}
+      {title: 'Title', content:'Content', tags:JSON.stringify(['A', 'B']), user_id:1, test1:'hehe'},
+      {title: 'Title', content:'Content', user_id:1, test2:'keke'}
     ]),
     knex('comments').insert([
       {title: 'Title1', content:'Content', user_id:1, post_id:1 },

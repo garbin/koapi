@@ -106,16 +106,20 @@ export class ResourceRouter extends Router {
     if (!fields) {
       throw new Error('fields can not be empty');
     }
+    let f = fields.isJoi ? fields._inner.children.reduce((_tmp, v)=>{
+      _tmp[v.key] = v.schema;
+      return _tmp;
+    }, {}) : fields;
 
     let base_joi = Object.assign({
-      [id]: Joi.number().integer().min(1),
+      [id]: Joi.any(),
     }, model.prototype.hasTimestamps ? {
       created_at: Joi.date(),
       updated_at: Joi.date()
     } : {});
 
-    let request_item = Joi.object(_.omit(fields, _.keys(base_joi))).label(title).description(description);
-    let response_item = Joi.object(Object.assign({}, base_joi, _.mapValues(fields, v => v.required()))).label(title).description(description);
+    let request_item = Joi.object(_.omit(f, _.keys(base_joi))).label(title).description(description);
+    let response_item = Joi.object(Object.assign({}, base_joi, _.mapValues(f, v => v.required()))).label(title).description(description);
     let result = {};
     _.forIn(this.methods, (v, k) => {
       if (v) {
@@ -129,7 +133,7 @@ export class ResourceRouter extends Router {
             result['read'] = schema(null, response_item);
           break;
           case 'update':
-            let req = Joi.object(_.omit(_.mapValues(fields, v => v.optional()), _.keys(base_joi))).label(title).description(description);
+            let req = Joi.object(_.omit(_.mapValues(f, v => v.optional()), _.keys(base_joi))).label(title).description(description);
             s = schema(req, response_item);
             break;
           case 'destroy':

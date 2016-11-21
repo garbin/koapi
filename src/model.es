@@ -120,8 +120,12 @@ function koapi_base_model_plugin (bookshelf) {
         let schemaKeys = this.validate._inner.children.map(child => child.key);
         let presentKeys = Object.keys(attrs)
         let optionalKeys = _.difference(schemaKeys, presentKeys)
+        let base_attrs = this.validate._inner.dependencies.reduce((_tmp, dep)=>{
+          dep.peers.forEach(peer => _tmp[peer] = model.get(peer) ? model.get(peer) : undefined);
+          return _tmp;
+        }, {});
         // only validate the keys that are being updated
-        validation = Joi.validate(attrs, this.validate.optionalKeys(optionalKeys))
+        validation = Joi.validate(Object.assign(base_attrs || {}, attrs), this.validate.optionalKeys(optionalKeys))
       } else {
         validation = Joi.validate(this.attributes, this.validate)
       }
