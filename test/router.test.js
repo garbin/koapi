@@ -43,35 +43,6 @@ class Post extends bookshelf.Model {
   }
 }
 
-// const Category = extend({
-//   tableName: 'categories',
-//   hasTimestamps: false,
-//   posts(){
-//     return this.belongsToMany(Post, 'category2post');
-//   }
-// });
-//
-// const Comment = extend({
-//   tableName: 'comments',
-//   hasTimestamps: true
-// });
-//
-// const Post = extend({
-//   tableName: 'posts',
-//   hasTimestamps: true,
-//   comments(){
-//     return this.hasMany(Comment);
-//   },
-//   categories(){
-//     return this.belongsToMany(Category, 'category2post')
-//   }
-// }, {
-//   fields: {
-//     title: Joi.string().required(),
-//     content: Joi.string().required()
-//   },
-// });
-
 const setup = (config) => {
   let app = new Koapi();
   app.use(middlewares.json_error())
@@ -92,8 +63,12 @@ let {server, app} = setup(app => {
         ctx.body = ctx.body.toJSON();
         ctx.body.haha = 'yes';
       });
-      router.read({
-        joins: ['categories'],
+      router.read(async(ctx, next)=>{
+        if (_.get(ctx.request.query, 'filters.category_id')) {
+          ctx.state.query = Post.forge().query(qb => qb.leftJoin('category2post', 'posts.id', 'category2post.post_id'));
+        }
+        await next();
+      }, {
         sortable: ['created_at'],
         filterable: [ 'user_id', 'category_id' ],
         searchable: ['title', 'content']
@@ -172,21 +147,35 @@ suite(({ResourceTester, request, test, expect})=>{
   tester.read(1, req => req.set('X-Header', 'haha')).test();
   tester.update(1, {title: 'new title'}).test();
   tester.destroy(2).test();
+  // tester.read(null, {
+  //   filters:{
+  //     category_id: [1, 2]
+  //   }
+  // }).test(res => {
+  //   expect(res.body).to.not.be.empty;
+  // });
   tester.read(null, {
     filters:{
-      category_id: [1, 2]
+      category_id: [3, 4]
     }
-  }).test(res => {
-    expect(res.body).to.not.be.empty;
-  });
-  tester.read(null, {
-    filters:{
-      category_id: 2
-    },
-    q:'doestnotexists'
   }).test(res => {
     expect(res.body).to.be.empty;
   });
+  tester.read(null, {
+    filters:{
+      test2: 'haha'
+    }
+  }).test(res => {
+    expect(res.body.length).to.be.equal(3);
+  });
+  // tester.read(null, {
+  //   filters:{
+  //     category_id: 2
+  //   },
+  //   q:'doestnotexists'
+  // }).test(res => {
+  //   expect(res.body).to.be.empty;
+  // });
   tester.read(null, {
     filters:{
       user_id:2

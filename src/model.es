@@ -103,16 +103,6 @@ function koapi_base_model_plugin (bookshelf) {
         return parsed;
       }, {});
     },
-
-    join(name){
-      let relation = this[name]().relatedData;
-      if (['belongsTo', 'belongsToMany', 'hasOne'].includes(relation.type)) {
-        let target = relation.target.forge();
-        let reverse = this.tableName;
-        this.query(qb => target[reverse]().relatedData.joinClauses(qb));
-      }
-      return this;
-    },
     async validateBeforeSave(model, attrs, options) {
       let validation;
       // model is not new or update method explicitly set
