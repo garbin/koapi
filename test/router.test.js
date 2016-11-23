@@ -130,7 +130,7 @@ suite(({request, test, expect})=>{
   });
 });
 
-suite(({ResourceTester, request, test, expect})=>{
+suite(async ({ResourceTester, request, test, expect})=>{
   let tester = new ResourceTester(server, '/posts');
   tester.create({title:'abc', content:'haha', tags:['a', 'b'], test1:'haha'}, req => req.set('X-Header', 'haha'))
         .test(res => {
@@ -142,7 +142,7 @@ suite(({ResourceTester, request, test, expect})=>{
                                                 .send({ title:'abc' })
                                                 .then(res => expect(res).to.have.status(422))
                                                 .catch(e => expect(e).to.have.status(422)));
-  tester.read(req => req.set('X-Header', 'haha')).test();
+  await tester.read(req => req.set('X-Header', 'haha')).test();
   tester.read(100).catch(e => expect(e.actual).equals(204)).test();
   tester.read(1, req => req.set('X-Header', 'haha')).test();
   tester.update(1, {title: 'new title'}).test();

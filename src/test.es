@@ -43,12 +43,14 @@ export const HttpTester = class  {
   }
   test(cb){
     cb = cb || function(res){return res;};
-    return test(this.config.title,t => this.promise.then(_.wrap(this.config.expect, (func, res)=>{
-      func(res);
-      cb(res);
-      return res;
-      // return cb(res);
-    })).catch(this.config.catch))
+    return new Promise((resolve, reject)=>{
+      test(this.config.title,t => this.promise.then(_.wrap(this.config.expect, (func, res)=>{
+        func(res);
+        cb(res);
+        return res;
+        // return cb(res);
+      })).then(resolve).catch(this.config.catch).catch(reject))
+    });
   }
 }
 
