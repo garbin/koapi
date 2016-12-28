@@ -89,6 +89,7 @@
     "lodash": "^4.16.6",
     "moment": "^2.15.2",
     "mysql": "^2.10.2",
+    "pluralize": "^3.1.0",
     "tldjs": "^1.6.2",
     "wildcard": "^1.1.2",
     "winston": "^2.3.0"

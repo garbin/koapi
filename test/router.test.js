@@ -88,7 +88,7 @@ let {server, app} = setup(app => {
       router.crud();
     }
   });
-  posts.use('/posts/:post_id(\\d+)', comments.routes());
+  posts.children(comments)
   app.bodyparser();
   app.routers( [ posts ] );
 });

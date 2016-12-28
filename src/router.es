@@ -8,6 +8,7 @@ import joi_to_json_schema from 'joi-to-json-schema'
 import jsf from 'json-schema-faker'
 import Joi from 'joi'
 import _ from 'lodash'
+import pluralize from 'pluralize'
 
 Router.define = function (options) {
   let {setup, ...rest} = options;
@@ -85,9 +86,12 @@ export class ResourceRouter extends Router {
     if (!_.isFunction(collection)) {
       options.model= options.model || collection.model;
       options.id   = options.id || options.model.prototype.idAttribute;
+      options.idType = '\\d+'
       this.collection = ctx => collection;
     }
     options.name = options.name || options.model.prototype.tableName;
+    options.singular_name = pluralize.singular(options.name)
+    options.foreignId = `${options.singular_name}_id`
     options.fields = options.fields || (options.model ? options.model.fields : undefined);
     options.root = options.root || '/' + options.name;
     options.title = options.title || options.name;
@@ -194,7 +198,7 @@ export class ResourceRouter extends Router {
                if (options.sortable) {
                  let order_by = _.get(ctx, 'request.query.sort', _.first(options.sortable));
                  if (_.includes(options.sortable, _.trimStart(order_by, '-'))) {
-                   query = query.orderBy(order_by);
+                   query = query.orderBy(order_by, order_by[0] == '-' ? 'DESC' : 'ASC');
                  }
                }
                if (options.filterable) {
@@ -213,7 +217,13 @@ export class ResourceRouter extends Router {
                    } : filter;
                  });
                  filters.forEach(filter => {
-                   query = filter(query, ctx.request.query.filters || {});
+                   try {
+                     let _filters = ctx.request.query.filters || {}
+                     if (_.isString(_filters)) {
+                       _filters = JSON.parse(_filters)
+                     }
+                     query = filter(query, _filters);
+                   } catch (e) {}
                  });
                }
                if (options.searchable) {
@@ -282,6 +292,21 @@ export class ResourceRouter extends Router {
   }
   crud(){
     return this.create().read().update().destroy();
+  }
+  children(){
+    const { foreignId, idType, singular_name } = this.options
+    const children = Array.slice(arguments)
+    this.use.apply(this, [
+      `${this.pattern.root}/:${foreignId}(${idType})`,
+      async(ctx, next) => {
+        ctx.state.children = ctx.state.children || {}
+        ctx.state.children[singular_name] = await this.collection(ctx)
+        .query(q => q.where({[this.options.id]:ctx.params[foreignId]}))
+        .fetchOne({required: true})
+        await next()
+      },
+      ...children.map(child => child.routes())
+    ])
   }
 }
 
