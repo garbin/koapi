@@ -1,8 +1,11 @@
-# Koapi
+# [Koapi](http://koapi.github.io/koapi)
 
 RESTful API framework based on koa and bookshelf
 
 Writing a RESTful API has never been so easy!
+
+## Intro
+Koapi is a library for building RESTful APIs in a really simple way.
 
 ## Installation
 ```bash
@@ -11,21 +14,21 @@ npm install koapi
 
 ## Write your APIs in just ONE minute
 
-## Assume you have database below
+* Assume you have database below
 
-### Table `posts`
+##### Table `posts`
 | id | title | contents | created_at | updated_at |
 |----|-------|----------|------------|------------|
 | 1  | Title | Contents | 2016-8-1   | 2016-8-1   |
 
-### Table `comments`
+#### Table `comments`
 
 | id | post_id | title | contents | created_at | updated_at |
 |----|---------|-------|----------|------------|------------|
 | 1  | 1       | Title | Comment  | 2016-8-1   | 2016-8-1   |
 
-## Here we go!
-### app.js
+* Here we go!
+#### app.js
 ```js
 import Koapi, { ResourceRouter } from 'koapi';
 import extend, { initialize } from 'koapi/lib/model'
@@ -74,13 +77,8 @@ const Post = extend({
 const posts = ResourceRouter.define(Post.collection());
 
 const comments = ResourceRouter.define({
-  collection: ctx => ctx.state.post.comments(),
+  collection: ctx => ctx.state.parents.post.comments(),
   setup(router){
-    // get post instance in context
-    router.use(async (ctx, next) => {
-      ctx.state.post = await Post.findById(ctx.params.post_id, {require:true});
-      await next();
-    });
     // method "crud" is a shortcut for create, read, update, destroy
     // YOU CAN ALSO USE MIDDLEWARE in create, read, update, destroy
     // AWESOME! RIGHT?!!!
@@ -98,9 +96,8 @@ const comments = ResourceRouter.define({
     router.destroy();
   }
 });
+posts.children(comments)
 
-// YES! Thanks to koa-router, nested router is supported
-posts.use('/posts/:post_id/comments', comments.routes())
 
 
 
@@ -118,6 +115,6 @@ babel-node app.js
 
 You have done your RESTful APIs in 1 minute
 
-# Your API is more complex?
+## Your API is more complex?
 
 Checkout [Koapi Boilerplate](https://github.com/koapi/koapi-boilerplate) for your situation.
