@@ -193,8 +193,10 @@ export class ResourceRouter extends Router {
                }
                if (options.sortable) {
                  let order_by = _.get(ctx, 'request.query.sort', _.first(options.sortable));
-                 if (_.includes(options.sortable, _.trimStart(order_by, '-'))) {
-                   query = query.orderBy(order_by);
+                 let sort_arr = _.split(order_by, ' ')
+                 let [sort, order='ASC'] = sort_arr
+                 if (_.includes(options.sortable, _.trimStart(sort, '-'))) {
+                   query = query.orderBy(sort, order);
                  }
                }
                if (options.filterable) {
