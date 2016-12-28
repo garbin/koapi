@@ -21,14 +21,14 @@ npm install koapi
 |----|-------|----------|------------|------------|
 | 1  | Title | Contents | 2016-8-1   | 2016-8-1   |
 
-#### Table `comments`
+##### Table `comments`
 
 | id | post_id | title | contents | created_at | updated_at |
 |----|---------|-------|----------|------------|------------|
 | 1  | 1       | Title | Comment  | 2016-8-1   | 2016-8-1   |
 
 * Here we go!
-#### app.js
+##### app.js
 ```js
 import Koapi, { ResourceRouter } from 'koapi';
 import extend, { initialize } from 'koapi/lib/model'
@@ -72,27 +72,22 @@ const Post = extend({
 // GET  /posts/:id
 // PATCH /posts/:id
 // DELETE /posts/:id
-// are ALL ready!
-// YES! IT'S DEAD SIMPLE! RIGHT?
 const posts = ResourceRouter.define(Post.collection());
 
 const comments = ResourceRouter.define({
   collection: ctx => ctx.state.parents.post.comments(),
   setup(router){
-    // method "crud" is a shortcut for create, read, update, destroy
-    // YOU CAN ALSO USE MIDDLEWARE in create, read, update, destroy
-    // AWESOME! RIGHT?!!!
+    // method "crud" is a shortcut for "create", "read", "update" and "destroy"
+    // YOU CAN ALSO USE MIDDLEWARE in "create", "read", "update", "destroy"    
     router.create(async(ctx, next) => {
       // you can do anything before create
       await next();
       // you can do anything after create
     });
-    router.read(/* if you want, you can place any middlewares here */{
-      filterable: ['created_at'], // filterable field
-      sortable: ['created_at'], // sortable field
-    });
-    // comment may not have update
-    // comments.update();
+    router.read(/* You can place any middleware here if you need */{
+      filterable: ['created_at'], // filterable fields
+      sortable: ['created_at'], // sortable fields
+    });        
     router.destroy();
   }
 });
@@ -101,7 +96,7 @@ posts.children(comments)
 
 
 
-/****************** Start server      ******************/
+/****************** Start server ******************/
 app.bodyparser();
 app.routers([ posts ]);
 
@@ -113,8 +108,11 @@ app.listen(3000);
 babel-node app.js
 ```
 
-You have done your RESTful APIs in 1 minute
+You have done your RESTful APIs in ONE minute
 
-## Your API is more complex?
+## Your API is far more complicated than this?
 
 Checkout [Koapi Boilerplate](https://github.com/koapi/koapi-boilerplate) for your situation.
+
+## License
+[MIT](http://opensource.org/licenses/MIT)
