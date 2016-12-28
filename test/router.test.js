@@ -78,13 +78,9 @@ let {server, app} = setup(app => {
     }
   });
   let comments = ResourceRouter.define({
-    collection: ctx => ctx.state.post.comments(),
+    collection: ctx => ctx.state.children.post.comments(),
     name:'comments',
     setup(router){
-      router.use(async (ctx, next) => {
-        ctx.state.post = await Post.where({id:ctx.params.post_id}).fetch();
-        await next();
-      });
       router.crud();
     }
   });
