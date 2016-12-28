@@ -307,6 +307,7 @@ export class ResourceRouter extends Router {
       },
       ...children.map(child => child.routes())
     ])
+    return this
   }
 }
 
