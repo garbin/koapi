@@ -2,14 +2,14 @@
 
 RESTful API framework based on koa and bookshelf
 
-Wriging a RESTful API have never been so easy!
+Writing a RESTful API has never been so easy!
 
-# Install
+## Installation
 ```bash
 npm install koapi
 ```
 
-# Write your APIs in just 1 minute
+## Write your APIs in just ONE minute
 
 ## Assume you have database below
 
