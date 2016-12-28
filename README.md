@@ -14,7 +14,7 @@ npm install koapi
 
 ## Write your APIs in just ONE minute
 
-* Assume you have database below
+### Assume you have database below
 
 ##### Table `posts`
 | id | title | contents | created_at | updated_at |
@@ -27,7 +27,8 @@ npm install koapi
 |----|---------|-------|----------|------------|------------|
 | 1  | 1       | Title | Comment  | 2016-8-1   | 2016-8-1   |
 
-* Here we go!
+### Here we go!
+
 ##### app.js
 ```js
 import Koapi, { ResourceRouter } from 'koapi';
@@ -48,7 +49,7 @@ initialize({
 
 
 
-/****************** Model definition    ******************/
+/****************** Define Models ******************/
 const Comment = extend({
   tableName: 'comments',
   hasTimestamps: true,
@@ -96,7 +97,7 @@ posts.children(comments)
 
 
 
-/****************** Start server ******************/
+/****************** Run server ******************/
 app.bodyparser();
 app.routers([ posts ]);
 
