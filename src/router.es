@@ -299,8 +299,8 @@ export class ResourceRouter extends Router {
     this.use.apply(this, [
       `${this.pattern.root}/:${foreignId}(${idType})`,
       async(ctx, next) => {
-        ctx.state.children = ctx.state.children || {}
-        ctx.state.children[singular_name] = await this.collection(ctx)
+        ctx.state.parents = ctx.state.parents || {}
+        ctx.state.parents[singular_name] = await this.collection(ctx)
         .query(q => q.where({[this.options.id]:ctx.params[foreignId]}))
         .fetchOne({required: true})
         await next()

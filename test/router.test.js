@@ -78,7 +78,7 @@ let {server, app} = setup(app => {
     }
   });
   let comments = ResourceRouter.define({
-    collection: ctx => ctx.state.children.post.comments(),
+    collection: ctx => ctx.state.parents.post.comments(),
     name:'comments',
     setup(router){
       router.crud();
