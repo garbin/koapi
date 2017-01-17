@@ -19,7 +19,8 @@
       "es"
     ],
     "testPathIgnorePatterns": [
-      "/node_modules/"
+      "/node_modules/",
+      "/lib"
     ],
     "setupFiles": [
       "<rootDir>/node_modules/babel-polyfill/lib"
