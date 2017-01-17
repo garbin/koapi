@@ -86,9 +86,9 @@ export class ResourceRouter extends Router {
     if (!_.isFunction(collection)) {
       options.model= options.model || collection.model;
       options.id   = options.id || options.model.prototype.idAttribute;
-      options.idType = '\\d+'
       this.collection = ctx => collection;
     }
+    options.idType = options.idType || '\\d+'
     options.name = options.name || options.model.prototype.tableName;
     options.singular_name = pluralize.singular(options.name)
     options.foreignId = `${options.singular_name}_id`
