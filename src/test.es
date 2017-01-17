@@ -10,8 +10,12 @@ export class ResourceTester {
   }
   setup(data, middleware = req => req){
     const self = this
+    let body = data
+    if (!_.isFunction(data)) {
+      body = () => data
+    }
     beforeEach(function(){
-      this.resource = self.req(middleware(request(self.server).post(self.resource).send(data)))
+      this.resource = self.req(middleware(request(self.server).post(self.resource).send(body())))
 
       return this.resource
     })
