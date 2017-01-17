@@ -1,134 +1,122 @@
-import chai from 'chai'
+import request from 'supertest'
 import _ from 'lodash'
-import qs from 'qs'
-import test from 'ava'
-import {expect} from 'chai'
-import chai_http from 'chai-http'
 
-chai.use(chai_http);
+export { request }
+export class ResourceTester {
+  constructor(server, resource) {
+    this.server = server
+    this.resource = resource
+    this.middlewares = []
+  }
+  setup(data, middleware = req => req){
+    const self = this
+    beforeEach(function(){
+      this.resource = self.req(middleware(request(self.server).post(self.resource).send(data)))
 
-export default (cb) => {
-  return cb({ResourceTester, test, expect, request});
-};
+      return this.resource
+    })
 
-export const request = chai.request;
-export {test, expect}
+    return this
+  }
+  use(...middlewares){
+    if (middlewares) {
+      this.middlewares = middlewares
+    }
+    return this
+  }
+  req(req){
+    this.middlewares.forEach(middleware => middleware(req))
+    return req
+  }
+  options(options = {}){
+    let before, assert, data, patch
+    if (_.isFunction(options)) {
+      assert = options
+    } else {
+      before = options.before
+      assert = options.assert
+      data   = options.data
+      patch  = options.patch
+    }
+    before = before || (req => req)
+    assert = assert || (res => res)
 
-export const HttpTester = class  {
-  request = null;
-  promise = null;
-  config = {
-    title:'',
-    expect: function(res){return res;},
-    catch: function(e){ throw e; }
-  };
-  constructor(server) {
-    this.request = request(server);
+    return { before, assert, data, patch }
   }
-  req(cb){
-    this.promise = cb(this.request);
-    return this;
+  create(options){
+    const {before, assert, data} = this.options(options)
+    const self = this
+    const basic = res => {
+      expect(res.status).toBe(201)
+      return res
+    }
+    test(`POST ${this.resource}`, function(){
+      const res = this.resource || self.req(before(request(self.server).post(self.resource).send(data)))
+      return res.then(basic).then(assert)
+    })
+    return this
   }
-  title(title){
-    this.config.title = title;
-    return this;
+  update(options){
+    const {before, assert, data, patch} = this.options(options)
+    const self = this
+    const basic = res => {
+      expect(res.status).toBe(202)
+      _.forIn(patch, (v, k)=> expect(res.body[k]).toBe(v) )
+      return res
+    }
+    test(`PATCH ${this.resource}/:id`, async function(){
+
+      const res = this.resource || self.req(before(request(self.server).post(self.resource).send(data)))
+      const origin = await res
+      return self.req(before(request(self.server).patch(`${self.resource}/${origin.body.id}`).send(patch))).then(basic).then(assert)
+    })
+    return this
   }
-  catch(cth){
-    this.config.catch = cth;
-    return this;
+  read(options){
+    const {before, assert, data, patch} = this.options(options)
+    const self = this
+    const basic = res => {
+      expect(res.status).toBe(200)
+      return res
+    }
+    test(`GET ${this.resource}`, async function(){
+      const res = this.resource || self.req(before(request(self.server).post(self.resource).send(data)))
+      const origin = await res
+      return self.req(before(request(self.server).get(self.resource))).then(basic).then(res => {
+        expect(res.body).toBeInstanceOf(Array)
+        return res
+      }).then(assert)
+    })
+    test(`GET ${this.resource}/:id`, async function(){
+      const res = this.resource || self.req(before(request(self.server).post(self.resource).send(data)))
+      const origin = await res
+      return self.req(before(request(self.server).get(`${self.resource}/${origin.body.id}`))).then(basic).then(res => {
+        expect(res.body.id).toBe(origin.body.id)
+        return res
+      }).then(assert)
+    })
+    return this
   }
-  expect(cb){
-    this.config.expect = cb;
-    return this;
+  destroy(options){
+    const {before, assert, data, patch} = this.options(options)
+    const self = this
+    const basic = res => {
+      expect(res.status).toBe(204)
+      return res
+    }
+    test(`DELETE ${this.resource}/:id`, async function(){
+
+      const res = this.resource || self.req(before(request(self.server).post(self.resource).send(data)))
+      const origin = await res
+      return self.req(before(request(self.server).del(`${self.resource}/${origin.body.id}`))).then(basic).then(assert)
+    })
+    return this
   }
-  test(cb){
-    cb = cb || function(res){return res;};
-    return new Promise((resolve, reject)=>{
-      test(this.config.title,t => this.promise.then(_.wrap(this.config.expect, (func, res)=>{
-        func(res);
-        cb(res);
-        return res;
-        // return cb(res);
-      })).then(resolve).catch(this.config.catch).catch(reject))
-    });
+  crud(options){
+    return this.create(options).read(options).update(options).destroy(options)
   }
 }
 
-export const ResourceTester = class  {
-  constructor(server, endpoint) {
-    this.endpoint = endpoint;
-    this.server   = server;
-  }
-  create(resource, reqcb = ch => ch){
-    let tester = new HttpTester(this.server);
-    tester.title(`POST ${this.endpoint}`);
-    tester.req(req => {
-      req = reqcb(req.post(this.endpoint).set('Accept', 'application/json'));
-      return _.isFunction(resource) ? resource(req) : req.send(resource);
-    });
-
-    tester.expect(res => {
-      expect(res).to.have.status(201)
-    });
-
-    return tester;
-  }
-  read(id, query = '', reqcb = ch => ch){
-    if (_.isFunction(id)) {
-      reqcb = id;
-      id = null;
-      query = '';
-    } else if (_.isFunction(query)) {
-      reqcb = query;
-      query = '';
-    }
-    query = _.isString(query) ? query : qs.stringify(query);
-    let path = this.endpoint + (id ? '/' + id : '') + (query ? '?' + query : '');
-    let tester = new HttpTester(this.server);
-    tester.title(`GET ${path}`);
-    tester.req(req => reqcb(req.get(path).set('Accept', 'application/json')));
-    tester.expect(res => {
-      expect(res).to.have.status(200);
-      if (!id) expect(res.body).to.be.an('array');
-    });
-
-    return tester;
-  }
-  update(id, data, query, reqcb = ch => ch){
-    if (_.isFunction(query)) {
-      reqcb = query;
-      query = '';
-    }
-    let path = this.endpoint + (id ? '/' + id : '') + (query ? '?' + query : '');
-    let tester = new HttpTester(this.server);
-    tester.title(`PATCH ${path}`);
-    tester.req(req => {
-      req = reqcb(req.patch(path).set('Accept', 'application/json'));
-      return _.isFunction(data) ? data(req) : req.send(data);
-    });
-    tester.expect(res => {
-      expect(res).to.have.status(202);
-      _.forIn(data, (v, k)=>{
-        expect(res.body[k]).equals(v);
-      });
-    });
-
-    return tester;
-  }
-  destroy(id, query, reqcb = ch => ch){
-    if (_.isFunction(query)) {
-      reqcb = query;
-      query = '';
-    }
-    let path = this.endpoint + (id ? '/' + id : '') + (query ? '?' + query : '');
-    let tester = new HttpTester(this.server);
-    tester.title(`DELETE ${path}`);
-    tester.req(req =>
-      reqcb(req.del(path).set('Accept', 'application/json')));
-    tester.expect(res => {
-      expect(res).to.have.status(204)
-    });
-
-    return tester;
-  }
+export default function (server, resource) {
+  return new ResourceTester(server, resource)
 }

@@ -1,14 +1,21 @@
 import { server } from './lib/server'
 import restful from '../src/test'
 
-describe('RESTful API', function () {
+describe('RESTful API1', function () {
   const posts = restful(server, '/posts')
-  const demo = {
+  const data = {
     title: 'abc',
     content: 'haha',
     tags: ['a', 'b'],
     test1: 'haha'
   }
-  posts.setup(demo).create().update({patch: {title: '123'}}).read().destroy()
-  posts.crud({ patch: {title: '123'} })
+  posts.create({ data })
+  posts.update({
+    data,
+    patch: {
+      title: '123'
+    }
+  })
+  posts.read({ data })
+  posts.destroy({ data })
 })
