@@ -1,6 +1,6 @@
 {
   "name": "koapi",
-  "version": "0.2.92",
+  "version": "0.3.0",
   "description": "RESTful API framework based on koajs",
   "main": "lib/index.js",
   "babel": {
@@ -10,10 +10,20 @@
     ]
   },
   "jest": {
-    "transform": { ".*": "<rootDir>/node_modules/babel-jest" },
-    "moduleFileExtensions": [ "js", "json", "es" ],
-    "testPathIgnorePatterns": [ "/node_modules/" ],
-    "setupFiles": ["<rootDir>/node_modules/babel-polyfill/lib"]
+    "transform": {
+      ".*": "<rootDir>/node_modules/babel-jest"
+    },
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "es"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/"
+    ],
+    "setupFiles": [
+      "<rootDir>/node_modules/babel-polyfill/lib"
+    ]
   },
   "scripts": {
     "compile": "babel --presets es2015,stage-0 -d lib/ src/",
