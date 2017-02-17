@@ -293,9 +293,8 @@ export class ResourceRouter extends Router {
   crud(){
     return this.create().read().update().destroy();
   }
-  children(){
+  children(...children){
     const { foreignId, idType, singular_name } = this.options
-    const children = Array.slice(arguments)
     this.use.apply(this, [
       `${this.pattern.root}/:${foreignId}(${idType})`,
       async(ctx, next) => {
