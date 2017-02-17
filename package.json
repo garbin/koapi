@@ -50,14 +50,11 @@
   },
   "homepage": "https://github.com/garbin/koapi#readme",
   "dependencies": {
-    "ava": "^0.15.2",
     "bookshelf": "^0.10.2",
     "bookshelf-cascade-delete": "^2.0.0",
     "bookshelf-mask": "^2.0.1",
     "bookshelf-paranoia": "^0.9.0",
     "bookshelf-uuid": "^1.0.0",
-    "chai": "^3.5.0",
-    "chai-http": "^3.0.0",
     "isipaddress": "0.0.2",
     "joi-to-json-schema": "^2.3.0",
     "json-schema-faker": "^0.3.7",
@@ -89,7 +86,6 @@
     "winston": "^2.3.0"
   },
   "devDependencies": {
-    "ava": "^0.16.0",
     "babel-cli": "^6.18.0",
     "babel-core": "^6.18.2",
     "babel-polyfill": "^6.9.0",
@@ -98,6 +94,7 @@
     "joi": "^9.2.0",
     "nodemon": "^1.9.1",
     "nyc": "^8.4.0",
-    "pg": "^6.1.0"
+    "pg": "^6.1.0",
+    "supertest": "^3.0.0"
   }
 }
