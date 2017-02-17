@@ -9,6 +9,7 @@ describe('RESTful API', function () {
     tags: ['a', 'b'],
     test1: 'haha'
   }
-  posts.setup(demo).create().update({patch: {title: '123'}}).read().destroy()
-  posts.crud({ patch: {title: '123'} })
+  // posts.setup(demo).create().update({patch: {title: '123'}}).read().destroy()
+  posts.setup(demo).crud({patch: {title: '123'}})
+  // posts.crud(demo)
 })
