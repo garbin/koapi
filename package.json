@@ -101,6 +101,7 @@
     "tldjs": "^1.6.2",
     "wildcard": "^1.1.2",
     "winston": "^2.3.0",
+    "jest": "^18.1.0",
     "yargs": "^6.6.0"
   },
   "devDependencies": {
@@ -110,7 +111,6 @@
     "babel-polyfill": "^6.9.0",
     "babel-preset-es2015": "^6.18.0",
     "babel-preset-stage-0": "^6.5.0",
-    "jest": "^18.1.0",
     "nodemon": "^1.9.1",
     "nyc": "^8.4.0",
     "pg": "^6.1.0"
