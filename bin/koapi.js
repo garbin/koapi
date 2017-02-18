@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-const yargs = require('yargs')
-const package = require(`${process.cwd()}/package`)
-const commands = require(package.koapi.commands.path)
+const cwd   = process.cwd()
+const package = require(`${cwd}/package`)
+const commands = require(`${cwd}/${package.koapi.commands.path}`)
 
-process.argv = !process.argv[2] && package.koapi.commands.default ?
-                 [...process.argv, ...package.koapi.commands.default] :
-                 process.argv
+process.argv = !process.argv[2] && package.koapi.commands.default ? [...process.argv, ...package.koapi.commands.default] : process.argv
+const yargs = require('yargs')
+
 
 yargs.usage('$0 <cmd> [args]')
 

@@ -71,7 +71,6 @@
     "bookshelf-paranoia": "^0.9.0",
     "bookshelf-uuid": "^1.0.0",
     "isipaddress": "0.0.2",
-    "jest": "^18.1.0",
     "joi": "^9.2.0",
     "joi-to-json-schema": "^2.3.0",
     "json-schema-faker": "^0.3.7",
@@ -111,6 +110,7 @@
     "babel-polyfill": "^6.9.0",
     "babel-preset-es2015": "^6.18.0",
     "babel-preset-stage-0": "^6.5.0",
+    "jest": "^18.1.0",
     "nodemon": "^1.9.1",
     "nyc": "^8.4.0",
     "pg": "^6.1.0"
