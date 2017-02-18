@@ -6,6 +6,7 @@ import soft_delete from 'bookshelf-paranoia'
 import mask from 'bookshelf-mask'
 import uuid from 'bookshelf-uuid'
 import Joi from 'joi'
+import ulid from 'ulid'
 
 export let bookshelf;
 
@@ -43,8 +44,12 @@ function koapi_base_model_plugin (bookshelf) {
   DuplicateError.prototype = Error.prototype;
   bookshelf.Model = M.extend({
     initialize: function () {
-      M.prototype.initialize.call(this);
-      this.validate = this.validate || this.constructor.fields;
+      M.prototype.initialize.call(this)
+      this.validate = this.validate || this.constructor.fields
+
+      if (this.ulid) this.defaults = _.merge({ [this.idAttribute]: ulid() }, _.result(this, 'defaults'))
+
+
       if (this.validate) {
         let baseValidation = Joi.object().keys({
           // id might be number or string, for optimization
