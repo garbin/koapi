@@ -3,6 +3,9 @@
   "version": "0.3.7",
   "description": "RESTful API framework based on koajs",
   "main": "lib/index.js",
+  "bin":{
+    "koapi": "./bin/koapi.js"
+  },
   "babel": {
     "presets": [
       "es2015",
