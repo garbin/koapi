@@ -101,7 +101,8 @@
     "supertest": "^3.0.0",
     "tldjs": "^1.6.2",
     "wildcard": "^1.1.2",
-    "winston": "^2.3.0"
+    "winston": "^2.3.0",
+    "yargs": "^6.6.0"
   },
   "devDependencies": {
     "babel-cli": "^6.18.0",

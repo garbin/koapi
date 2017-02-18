@@ -3,7 +3,9 @@ const yargs = require('yargs')
 const package = require(`${process.cwd()}/package`)
 const commands = require(package.koapi.commands.path)
 
-if (!process.argv[2]) process.argv.push(package.koapi.commands.default)
+process.argv = !process.argv[2] && package.koapi.commands.default ?
+                 [...process.argv, ...package.koapi.commands.default] :
+                 process.argv
 
 yargs.usage('$0 <cmd> [args]')
 
