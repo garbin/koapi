@@ -3,7 +3,7 @@ process.argv = !process.argv[2] ? process.argv.concat(package.koapi.commands.def
 const cwd   = process.cwd()
 const package = require(`${cwd}/package`)
 const commands = require(`${cwd}/${package.koapi.commands.path}`)
-const yargs = require('yargs')
+const yargs = require('yargs').strict()
 
 
 yargs.usage('$0 <cmd> [args]')
