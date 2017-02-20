@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-process.argv = !process.argv[2] ? process.argv.concat(package.koapi.commands.default || []) : process.argv
 const cwd   = process.cwd()
 const package = require(`${cwd}/package`)
+process.argv = !process.argv[2] ? process.argv.concat(package.koapi.commands.default || []) : process.argv
 const commands = require(`${cwd}/${package.koapi.commands.path}`)
 const yargs = require('yargs').strict()
 
