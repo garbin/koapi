@@ -56,7 +56,7 @@ export class ResourceTester {
     }
     test(`POST ${this.resource}`, function(){
       const res = this.resource || self.req(before(request(self.server).post(self.resource).send(data)))
-      return res.then(basic).then(assert)
+      return res.then(basic).then(assert).catch(assert)
     })
     return this
   }
@@ -72,7 +72,7 @@ export class ResourceTester {
 
       const res = this.resource || self.req(before(request(self.server).post(self.resource).send(data)))
       const origin = await res
-      return self.req(before(request(self.server).patch(`${self.resource}/${origin.body.id}`).send(patch))).then(basic).then(assert)
+      return self.req(before(request(self.server).patch(`${self.resource}/${origin.body.id}`).send(patch))).then(basic).then(assert).catch(assert)
     })
     return this
   }
@@ -89,7 +89,7 @@ export class ResourceTester {
       return self.req(before(request(self.server).get(self.resource))).then(basic).then(res => {
         expect(res.body).toBeInstanceOf(Array)
         return res
-      }).then(assert)
+      }).then(assert).catch(assert)
     })
     test(`GET ${this.resource}/:id`, async function(){
       const res = this.resource || self.req(before(request(self.server).post(self.resource).send(data)))
@@ -97,7 +97,7 @@ export class ResourceTester {
       return self.req(before(request(self.server).get(`${self.resource}/${origin.body.id}`))).then(basic).then(res => {
         expect(res.body.id).toBe(origin.body.id)
         return res
-      }).then(assert)
+      }).then(assert).catch(assert)
     })
     return this
   }
@@ -112,7 +112,7 @@ export class ResourceTester {
 
       const res = this.resource || self.req(before(request(self.server).post(self.resource).send(data)))
       const origin = await res
-      return self.req(before(request(self.server).del(`${self.resource}/${origin.body.id}`))).then(basic).then(assert)
+      return self.req(before(request(self.server).del(`${self.resource}/${origin.body.id}`))).then(basic).then(assert).catch(assert)
     })
     return this
   }
