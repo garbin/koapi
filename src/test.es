@@ -33,22 +33,24 @@ export class ResourceTester {
     return req
   }
   options(options = {}){
-    let before, assert, data, patch
+    let before, assert, data, patch, errorAssert
     if (_.isFunction(options)) {
       assert = options
     } else {
       before = options.before
       assert = options.assert
+      errorAssert = options.errorAssert
       data   = options.data
       patch  = options.patch
     }
     before = before || (req => req)
     assert = assert || (res => res)
+    errorAssert = errorAssert || (err => { throw err })
 
     return { before, assert, data, patch }
   }
   create(options){
-    const {before, assert, data} = this.options(options)
+    const {before, assert, data, errorAssert} = this.options(options)
     const self = this
     const basic = res => {
       expect(res.status).toBe(201)
@@ -56,12 +58,12 @@ export class ResourceTester {
     }
     test(`POST ${this.resource}`, function(){
       const res = this.resource || self.req(before(request(self.server).post(self.resource).send(data)))
-      return res.then(basic).then(assert).catch(assert)
+      return res.then(basic).then(assert).catch(errorAssert)
     })
     return this
   }
   update(options){
-    const {before, assert, data, patch} = this.options(options)
+    const {before, assert, data, patch, errorAssert} = this.options(options)
     const self = this
     const basic = res => {
       expect(res.status).toBe(202)
@@ -72,12 +74,12 @@ export class ResourceTester {
 
       const res = this.resource || self.req(before(request(self.server).post(self.resource).send(data)))
       const origin = await res
-      return self.req(before(request(self.server).patch(`${self.resource}/${origin.body.id}`).send(patch))).then(basic).then(assert).catch(assert)
+      return self.req(before(request(self.server).patch(`${self.resource}/${origin.body.id}`).send(patch))).then(basic).then(assert).catch(errorAssert)
     })
     return this
   }
   read(options){
-    const {before, assert, data, patch} = this.options(options)
+    const {before, assert, data, patch, errorAssert} = this.options(options)
     const self = this
     const basic = res => {
       expect(res.status).toBe(200)
@@ -89,7 +91,7 @@ export class ResourceTester {
       return self.req(before(request(self.server).get(self.resource))).then(basic).then(res => {
         expect(res.body).toBeInstanceOf(Array)
         return res
-      }).then(assert).catch(assert)
+      }).then(assert).catch(errorAssert)
     })
     test(`GET ${this.resource}/:id`, async function(){
       const res = this.resource || self.req(before(request(self.server).post(self.resource).send(data)))
@@ -97,12 +99,12 @@ export class ResourceTester {
       return self.req(before(request(self.server).get(`${self.resource}/${origin.body.id}`))).then(basic).then(res => {
         expect(res.body.id).toBe(origin.body.id)
         return res
-      }).then(assert).catch(assert)
+      }).then(assert).catch(errorAssert)
     })
     return this
   }
   destroy(options){
-    const {before, assert, data, patch} = this.options(options)
+    const {before, assert, data, patch, errorAssert} = this.options(options)
     const self = this
     const basic = res => {
       expect(res.status).toBe(204)
@@ -112,7 +114,7 @@ export class ResourceTester {
 
       const res = this.resource || self.req(before(request(self.server).post(self.resource).send(data)))
       const origin = await res
-      return self.req(before(request(self.server).del(`${self.resource}/${origin.body.id}`))).then(basic).then(assert).catch(assert)
+      return self.req(before(request(self.server).del(`${self.resource}/${origin.body.id}`))).then(basic).then(assert).catch(errorAssert)
     })
     return this
   }
