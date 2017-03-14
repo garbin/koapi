@@ -15,7 +15,9 @@ export class ResourceTester {
       body = () => data
     }
     beforeEach(function(){
-      this.resource = self.req(middleware(request(self.server).post(self.resource).send(body())))
+      this.resource = self.req(middleware(request(self.server).post(self.resource)))
+      let d = body()
+      if (d) this.resource.send(d)
 
       return this.resource
     })
@@ -57,7 +59,13 @@ export class ResourceTester {
       return res
     }
     test(`POST ${this.resource}`, function(){
-      const res = this.resource || self.req(before(request(self.server).post(self.resource).send(data)))
+      let res
+      if (this.resource) {
+        res = this.resource
+      } else {
+        res = self.req(before(request(self.server).post(self.resource)))
+        if(data) res.send(data)
+      }
       return res.then(basic).then(assert).catch(errorAssert)
     })
     return this
@@ -71,10 +79,17 @@ export class ResourceTester {
       return res
     }
     test(`PATCH ${this.resource}/:id`, async function(){
-
-      const res = this.resource || self.req(before(request(self.server).post(self.resource).send(data)))
+      let res
+      if (this.resource) {
+        res = this.resource
+      } else {
+        res = self.req(before(request(self.server).post(self.resource)))
+        if(data) res.send(data)
+      }
       const origin = await res
-      return self.req(before(request(self.server).patch(`${self.resource}/${origin.body.id}`).send(patch))).then(basic).then(assert).catch(errorAssert)
+      const ures = self.req(before(request(self.server).patch(`${self.resource}/${origin.body.id}`)))
+      if (patch) ures.send(patch)
+      return ures.then(basic).then(assert).catch(errorAssert)
     })
     return this
   }
@@ -111,8 +126,13 @@ export class ResourceTester {
       return res
     }
     test(`DELETE ${this.resource}/:id`, async function(){
-
-      const res = this.resource || self.req(before(request(self.server).post(self.resource).send(data)))
+      let res
+      if (this.resource) {
+        res = this.resource
+      } else {
+        res = self.req(before(request(self.server).post(self.resource)))
+        if(data) res.send(data)
+      }
       const origin = await res
       return self.req(before(request(self.server).del(`${self.resource}/${origin.body.id}`))).then(basic).then(assert).catch(errorAssert)
     })
