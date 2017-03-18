@@ -91,7 +91,7 @@ function koapi_base_model_plugin (bookshelf) {
       if (super.format)  attrs = super.format(attrs);
       return _.reduce(attrs, (formatted, v, k) => {
         formatted[k] = v;
-        if (_.get(this, `_format.${k}.formatter`)) {
+        if (_.get(this, `_format.${k}.formatter`) && this.hasChanged(k)) {
           formatted[k] = this._format[k].formatter(v);
         }
         return formatted;
