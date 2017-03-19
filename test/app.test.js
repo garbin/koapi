@@ -1,5 +1,5 @@
-import Koapi, {Router, middlewares} from '../src'
-import request from 'supertest'
+const { Koapi, Router, middlewares } = require('../lib')
+const request = require('supertest')
 
 const setup = (config) => {
   let app = new Koapi()
@@ -18,10 +18,10 @@ describe('basic', () => {
 })
 
 describe('advanced', () => {
-  let {server, app} = setup(app => {
+  let { server } = setup(app => {
     app.routers([
-      (new Router()).get('/', ctx => ctx.body = 'Hello World').routes(),
-      Router.define(router => router.get('/test', ctx => ctx.body = 'test'))
+      (new Router()).get('/', ctx => { ctx.body = 'Hello World' }).routes(),
+      Router.define(router => router.get('/test', ctx => { ctx.body = 'test' }))
     ])
   })
   it('should get 200 ok', () => request(server)
@@ -45,10 +45,10 @@ describe('advanced', () => {
 })
 
 describe('haha', () => {
-  let {server, app} = setup(app => {
+  let { server } = setup(app => {
     app.routers([
-      middlewares.subdomain('api.*', (new Router()).get('/', ctx => ctx.body = 'api').routes()),
-      (new Router()).get('/', ctx => ctx.body = 'index').routes()
+      middlewares.subdomain('api.*', (new Router()).get('/', ctx => { ctx.body = 'api' }).routes()),
+      (new Router()).get('/', ctx => { ctx.body = 'index' }).routes()
     ])
   })
 

@@ -1,5 +1,5 @@
-import { server } from './lib/server'
-import restful from '../src/test'
+const { server } = require('./lib/server')
+const { restful } = require('../lib/test')
 
 describe('RESTful API1', function () {
   const posts = restful(server, '/posts')

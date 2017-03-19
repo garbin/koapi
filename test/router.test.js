@@ -1,5 +1,5 @@
-import { server } from './lib/server'
-import restful from '../src/test'
+const { server } = require('./lib/server')
+const { restful } = require('../lib/test')
 
 describe('RESTful API', function () {
   const posts = restful(server, '/posts')
@@ -9,7 +9,5 @@ describe('RESTful API', function () {
     tags: ['a', 'b'],
     test1: 'haha'
   }
-  // posts.setup(demo).create().update({patch: {title: '123'}}).read().destroy()
   posts.setup(demo).crud({patch: {title: '123'}})
-  // posts.crud(demo)
 })
