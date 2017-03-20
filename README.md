@@ -31,13 +31,12 @@ npm install koapi
 
 ##### app.js
 ```js
-import Koapi, { ResourceRouter } from 'koapi';
-import extend, { initialize } from 'koapi/lib/model'
+const { Koapi, router: { ResourceRouter }, model } = require('koapi')
 
 const app = new Koapi();
 
 /****************** Connect to database ******************/
-initialize({
+model.connect({
   client: 'pg',
   connection: {
     host     : '127.0.0.1',
@@ -45,26 +44,20 @@ initialize({
     password : 'your_database_password',
     database : 'myapp_test'
   }
-});
+})
 
 
-
-/****************** Define Models ******************/
-const Comment = extend({
-  tableName: 'comments',
-  hasTimestamps: true,
-});
-
-const Post = extend({
-  tableName: 'posts',
-  hasTimestamps: true,
-  comments(){
+class Comment extends model.base() {
+  get tableName () { return 'comments' }
+  get hasTimestamps () { return true }
+}
+class Post extends model.base() {
+  get tableName () { return 'posts' }
+  get hasTimestamps () { return true }
+  comments () {
     return this.hasMany(Comment);
   }
-});
-
-
-
+}
 
 /****************** Implement Routers ******************/
 
@@ -94,9 +87,6 @@ const comments = ResourceRouter.define({
 });
 posts.children(comments)
 
-
-
-
 /****************** Run server ******************/
 app.bodyparser();
 app.routers([ posts ]);
@@ -106,14 +96,13 @@ app.listen(3000);
 
 ### run
 ```bash
-babel-node app.js
+node ./app
 ```
 
 You have done your RESTful APIs in ONE minute
 
 ## Your API is far more complicated than this?
-
-Checkout [Koapi Boilerplate](https://github.com/koapi/koapi-boilerplate) for your situation.
+Checkout [Koapp](https://github.com/koapi/koapp) for your situation.
 
 ## License
 [MIT](http://opensource.org/licenses/MIT)

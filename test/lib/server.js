@@ -1,13 +1,12 @@
 const knexConfig = require('../knex/knexfile')
 const Raw = require('knex/lib/raw')
-const { Koapi, middlewares, router: { ResourceRouter, AggregateRouter } } = require('../../lib')
-const { connect, Model } = require('../../lib/model')
+const { Koapi, middlewares, model, router: { ResourceRouter, AggregateRouter } } = require('../../lib')
 const Joi = require('joi')
 const _ = require('lodash')
 
-const { bookshelf, connection } = connect(knexConfig.test)
+const { connection } = model.connect(knexConfig.test)
 
-class Category extends bookshelf.Model {
+class Category extends model.base() {
   get tableName () { return 'categories' }
   get hasTimestamps () { return false }
   posts () {
@@ -15,13 +14,13 @@ class Category extends bookshelf.Model {
   }
 }
 
-class Comment extends Model() {
+class Comment extends model.base() {
   get tableName () { return 'comments' }
   get hasTimestamps () { return false }
   get unique () { return ['title'] }
 }
 
-class Post extends Model() {
+class Post extends model.base() {
   static get fields () {
     return Joi.object().keys({
       title: Joi.string().required(),
