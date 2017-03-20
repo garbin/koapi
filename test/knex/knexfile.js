@@ -1,5 +1,4 @@
 // Update with your config settings.
-require('babel-register')
 exports.development = exports.production = exports.test = {
   // debug:true,
   client: 'postgres',

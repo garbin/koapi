@@ -7,9 +7,6 @@
     "koapi": "./bin/koapi.js"
   },
   "jest": {
-    "transform": {
-      ".*": "<rootDir>/node_modules/babel-jest"
-    },
     "moduleFileExtensions": [
       "js",
       "json",
@@ -18,9 +15,6 @@
     "testPathIgnorePatterns": [
       "/node_modules/",
       "/lib"
-    ],
-    "setupFiles": [
-      "<rootDir>/node_modules/babel-polyfill/lib"
     ]
   },
   "scripts": {
@@ -47,7 +41,6 @@
     "bookshelf": "^0.10.2",
     "bookshelf-cascade-delete": "^2.0.0",
     "bookshelf-mask": "^2.0.1",
-    "bookshelf-modelbase": "^2.10.3",
     "bookshelf-paranoia": "^0.9.0",
     "bookshelf-uuid": "^1.0.0",
     "isipaddress": "0.0.2",
