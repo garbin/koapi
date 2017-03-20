@@ -1,6 +1,6 @@
 exports.seed = function (knex, Promise) {
   const model = require('../../../lib/model')
-  model.initialize(knex)
+  model.connect(knex)
   return Promise.join(
     // Deletes ALL existing entries
     knex('posts').del(),

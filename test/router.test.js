@@ -1,5 +1,6 @@
-const { server } = require('./lib/server')
-const { restful } = require('../lib/test')
+const { server, connection } = require('./lib/server')
+const { restful, request } = require('../lib/test')
+const { describe, test, expect } = global
 
 describe('RESTful API', function () {
   const posts = restful(server, '/posts')
@@ -9,5 +10,24 @@ describe('RESTful API', function () {
     tags: ['a', 'b'],
     test1: 'haha'
   }
-  posts.setup(demo).crud({patch: {title: '123'}})
+  test('aggregate', async () => {
+    const res = await request(server).get('/aggregate/posts')
+    expect(res.status).toBe(200)
+    expect(res.body).toBeInstanceOf(Array)
+  })
+
+  test('aggregate filters', async () => {
+    const res = await request(server).get('/aggregate/posts?filters[test1]=hehe&q=le')
+    expect(res.status).toBe(200)
+    expect(res.body).toBeInstanceOf(Array)
+    expect(res.body[0].total).toBe('1')
+  })
+
+  test('aggregate filters', async () => {
+    const res = await request(server).get('/aggregate/posts?filters[test1]=hehe&q=le')
+    expect(res.status).toBe(200)
+    expect(res.body).toBeInstanceOf(Array)
+    expect(res.body[0].total).toBe('1')
+  })
+  posts.setup(demo).crud({patch: {title: '123'}}).teardown(e => connection.destroy())
 })

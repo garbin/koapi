@@ -1,11 +1,16 @@
-const { Koapi, Router, middlewares } = require('../lib')
+const { Koapi, router: { Router }, middlewares } = require('../lib')
 const request = require('supertest')
+const internal = []
+const { afterAll, describe, it, expect } = global
+
+afterAll(() => internal.forEach(server => server.close()))
 
 const setup = (config) => {
   let app = new Koapi()
   app.compress()
   config(app)
   let server = app.listen(null)
+  internal.push(server)
   return {app, server}
 }
 

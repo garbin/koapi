@@ -1,4 +1,4 @@
-const { server } = require('./lib/server')
+const { server, connection } = require('./lib/server')
 const { restful } = require('../lib/test')
 
 describe('RESTful API1', function () {
@@ -18,4 +18,5 @@ describe('RESTful API1', function () {
   })
   posts.read({ data })
   posts.destroy({ data })
+  posts.teardown(e => connection.destroy())
 })

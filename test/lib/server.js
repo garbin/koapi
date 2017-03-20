@@ -1,10 +1,53 @@
 const knexConfig = require('../knex/knexfile')
-const { Koapi, middlewares, ResourceRouter } = require('../../lib')
-const { initialize, Model } = require('../../lib/model')
+const Raw = require('knex/lib/raw')
+const { Koapi, middlewares, router: { ResourceRouter, AggregateRouter } } = require('../../lib')
+const { connect, Model } = require('../../lib/model')
 const Joi = require('joi')
 const _ = require('lodash')
 
-initialize(knexConfig.test)
+const { bookshelf, connection } = connect(knexConfig.test)
+
+class Category extends bookshelf.Model {
+  get tableName () { return 'categories' }
+  get hasTimestamps () { return false }
+  posts () {
+    return this.belongsToMany(Post, 'category2post').withPivot(['category_id'])
+  }
+}
+
+class Comment extends Model() {
+  get tableName () { return 'comments' }
+  get hasTimestamps () { return false }
+  get unique () { return ['title'] }
+}
+
+class Post extends Model() {
+  static get fields () {
+    return Joi.object().keys({
+      title: Joi.string().required(),
+      content: Joi.string().required(),
+      tags: Joi.array(),
+      test1: Joi.string(),
+      test2: Joi.string()
+    }).or(['test1', 'test2'])
+  }
+  static get format () {
+    return {
+      tags: 'json'
+    }
+  }
+  static get dependents () {
+    return ['comments']
+  }
+  get tableName () { return 'posts' }
+  get hasTimestamps () { return true }
+  comments () {
+    return this.hasMany(Comment)
+  }
+  categories () {
+    return this.belongsToMany(Category, 'category2post')
+  }
+}
 
 const setup = (config) => {
   let app = new Koapi()
@@ -16,48 +59,7 @@ const setup = (config) => {
 }
 
 const {server, app} = setup(app => {
-  class Category extends Model() {
-    get tableName () { return 'categories' }
-    get hasTimestamps () { return false }
-    posts () {
-      return this.belongsToMany(Post, 'category2post').withPivot(['category_id'])
-    }
-  }
-
-  class Comment extends Model() {
-    get tableName () { return 'comments' }
-    get hasTimestamps () { return false }
-    get unique () { return ['title'] }
-  }
-
-  class Post extends Model() {
-    static get fields () {
-      return Joi.object().keys({
-        title: Joi.string().required(),
-        content: Joi.string().required(),
-        tags: Joi.array(),
-        test1: Joi.string(),
-        test2: Joi.string()
-      }).or(['test1', 'test2'])
-    }
-    static get format () {
-      return {
-        tags: 'json'
-      }
-    }
-    static get dependents () {
-      return ['comments']
-    }
-    get tableName () { return 'posts' }
-    get hasTimestamps () { return true }
-    comments () {
-      return this.hasMany(Comment)
-    }
-    categories () {
-      return this.belongsToMany(Category, 'category2post')
-    }
-  }
-  let posts = ResourceRouter.define({
+  const posts = ResourceRouter.define({
     collection: Post.collection(),
     setup (router) {
       router.create(async (ctx, next) => {
@@ -81,15 +83,30 @@ const {server, app} = setup(app => {
       router.destroy()
     }
   })
-  let comments = ResourceRouter.define({
+  const comments = ResourceRouter.define({
     collection: ctx => ctx.state.parents.post.comments(),
     name: 'comments',
     setup (router) {
       router.crud()
     }
   })
+  const aggregate = AggregateRouter.define(router => {
+    router.aggregate(Post.collection(), {
+      filterable: ['test1'],
+      searchable: ['title'],
+      dimensions: [
+        {
+          column: new Raw().set('created_at::date as created_date'),
+          name: 'created_date'
+        }
+      ],
+      metrics: [
+        { name: 'total', aggregate: 'count', column: 'id as total' }
+      ]
+    })
+  })
   posts.children(comments)
   app.bodyparser()
-  app.routers([ posts ])
+  app.routers([ posts, aggregate ])
 })
-module.exports = { server, app }
+module.exports = { server, app, connection }

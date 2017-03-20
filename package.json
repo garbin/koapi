@@ -24,7 +24,7 @@
     ]
   },
   "scripts": {
-    "test": "export NODE_ENV=test && npm run knex migrate:rollback && npm run knex migrate:latest && npm run knex seed:run && jest --forceExit",
+    "test": "export NODE_ENV=test && npm run knex migrate:rollback && npm run knex migrate:latest && npm run knex seed:run && jest",
     "knex": "NODE_ENV=test knex --knexfile ./test/knex/knexfile.js"
   },
   "repository": {
