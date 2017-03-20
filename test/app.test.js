@@ -1,4 +1,4 @@
-const { Koapi, router: { Router }, middlewares } = require('../lib')
+const { Koapi, router: { Router }, middlewares, logger } = require('../lib')
 const request = require('supertest')
 const internal = []
 const { afterAll, describe, it, expect } = global
@@ -24,16 +24,31 @@ describe('basic', () => {
 
 describe('advanced', () => {
   let { server } = setup(app => {
+    app.use(middlewares.jsonError({emit: false}))
+    app.use(async (ctx, next) => {
+      try {
+        await next()
+      } catch (e) { throw e }
+    })
     app.routers([
-      (new Router()).get('/', ctx => { ctx.body = 'Hello World' }).routes(),
-      Router.define(router => router.get('/test', ctx => { ctx.body = 'test' }))
+      (new Router()).get('/', async ctx => { ctx.body = 'Hello World' }).routes(),
+      Router.define(router => router.get('/test', async ctx => { ctx.body = 'test' })),
+      Router.define(router => router.get('/error', async ctx => { throw new Error('error') }))
     ])
   })
-  it('should get 200 ok', () => request(server)
-                                .get('/')
+  it('should get 200 ok', () =>
+    request(server)
+      .get('/')
+      .then(res => {
+        expect(res.status).toBe(200)
+        expect(res.text).toBe('Hello World')
+      })
+  )
+  it('should get 500 ok', () => request(server)
+                                .get('/error')
                                 .then(res => {
-                                  expect(res.status).toBe(200)
-                                  expect(res.text).toBe('Hello World')
+                                  expect(res.status).toBe(500)
+                                  expect(res.body.message).toBe('error')
                                 }))
   it('should get 200 ok', () => request(server)
                                 .get('/test')
