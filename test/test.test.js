@@ -1,5 +1,6 @@
-const { server, connection } = require('./lib/server')
+const { server, teardown } = require('./lib/server')
 const { restful } = require('../lib/test')
+const { describe } = global
 
 describe('RESTful API1', function () {
   const posts = restful(server, '/posts')
@@ -9,6 +10,7 @@ describe('RESTful API1', function () {
     tags: ['a', 'b'],
     test1: 'haha'
   }
+  posts.teardown(teardown)
   posts.create({ data })
   posts.update({
     data,
@@ -18,5 +20,4 @@ describe('RESTful API1', function () {
   })
   posts.read({ data })
   posts.destroy({ data })
-  posts.teardown(e => connection.destroy())
 })

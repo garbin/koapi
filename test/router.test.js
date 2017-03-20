@@ -1,4 +1,4 @@
-const { server, connection } = require('./lib/server')
+const { server, teardown } = require('./lib/server')
 const { restful, request } = require('../lib/test')
 const { describe, test, expect } = global
 
@@ -29,5 +29,5 @@ describe('RESTful API', function () {
     expect(res.body).toBeInstanceOf(Array)
     expect(res.body[0].total).toBe('1')
   })
-  posts.setup(demo).crud({patch: {title: '123'}}).teardown(e => connection.destroy())
+  posts.setup(demo).teardown(teardown).crud({patch: {title: '123'}})
 })
