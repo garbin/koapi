@@ -108,8 +108,7 @@ const {server, app} = setup(app => {
   app.bodyparser()
   app.routers([ posts, aggregate ])
 })
-function teardown () {
-  server.close()
+server.on('close', function () {
   connection.destroy()
-}
-module.exports = { server, app, connection, teardown }
+})
+module.exports = { server, app }
