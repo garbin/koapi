@@ -2,11 +2,12 @@ const knexConfig = require('../knex/knexfile')
 const Raw = require('knex/lib/raw')
 const { Koapi, middlewares, model, router: { ResourceRouter, AggregateRouter } } = require('../../lib')
 const Joi = require('joi')
+const md5 = require('blueimp-md5')
 const _ = require('lodash')
 
 const { connection } = model.connect(knexConfig.test)
 
-class Category extends model.base() {
+const Category = class extends model.base() {
   get tableName () { return 'categories' }
   get hasTimestamps () { return false }
   posts () {
@@ -14,25 +15,30 @@ class Category extends model.base() {
   }
 }
 
-class Comment extends model.base() {
+const Comment = class extends model.base() {
   get tableName () { return 'comments' }
   get hasTimestamps () { return false }
   get unique () { return ['title'] }
 }
 
-class Post extends model.base() {
+const Post = class extends model.base() {
   static get fields () {
     return Joi.object().keys({
       title: Joi.string().required(),
       content: Joi.string().required(),
       tags: Joi.array(),
+      array: Joi.array(),
+      object: Joi.object(),
       test1: Joi.string(),
       test2: Joi.string()
     }).or(['test1', 'test2'])
   }
+  static get jsonColumns () {
+    return ['array', 'object', 'tags']
+  }
   static get format () {
     return {
-      tags: 'json'
+      test1: md5
     }
   }
   static get dependents () {
@@ -111,4 +117,4 @@ const {server, app} = setup(app => {
 server.on('close', function () {
   connection.destroy()
 })
-module.exports = { server, app }
+module.exports = { server, app, Category, Post, Comment }

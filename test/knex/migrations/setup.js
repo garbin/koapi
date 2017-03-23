@@ -6,6 +6,8 @@ exports.up = function (knex, Promise) {
     table.text('content')
     table.integer('user_id')
     table.jsonb('tags')
+    table.jsonb('array')
+    table.jsonb('object')
     table.string('test1')
     table.string('test2')
     table.timestamp('created_at').notNullable().defaultTo(knex.fn.now())
