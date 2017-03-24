@@ -27,14 +27,14 @@ const Post = class extends model.base() {
       title: Joi.string().required(),
       content: Joi.string().required(),
       tags: Joi.array(),
-      array: Joi.array(),
-      object: Joi.object(),
+      object: [Joi.object(), Joi.array()],
+      native_object: Joi.object(),
       test1: Joi.string(),
       test2: Joi.string()
     }).or(['test1', 'test2'])
   }
   static get jsonColumns () {
-    return ['array', 'object', 'tags']
+    return ['object', 'tags']
   }
   static get format () {
     return {

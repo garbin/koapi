@@ -5,7 +5,7 @@ const { afterAll } = global
 afterAll(() => { server.close() })
 
 describe('RESTful API1', function () {
-  it('formatter should work', async () => {
+  it('format save', async () => {
     const post = await Post.forge().save({
       title: 'a',
       content: 'b',
@@ -19,7 +19,7 @@ describe('RESTful API1', function () {
     expect(read.get('title')).toBe('b')
     expect(read.get('test1')).toBe(hashed)
   })
-  it('should saved', async () => {
+  it('native json object', async () => {
     const object = {
       'name': '颜色',
       'value': 'color',
@@ -28,18 +28,41 @@ describe('RESTful API1', function () {
         'value': 'black'
       }]
     }
-    const create = await Post.forge().save({
+    const post = await Post.forge().save({
       title: 'a',
       content: 'b',
-      object,
+      native_object: object,
       test1: 'abc'
     })
-    expect(create.get('object')).toEqual(object)
-    const read = await Post.findById(create.get('id'))
-    expect(read.get('object')).toEqual(object)
+    expect(post.get('native_object')).toEqual(object)
+    const fetched = await Post.findById(post.get('id'))
+    expect(fetched.get('native_object')).toEqual(object)
+    const saved = await fetched.save({title: 'b', native_object: object})
+    expect(saved.get('native_object')).toEqual(object)
   })
-  it('array can be saved success', async () => {
-    const array = [{
+  it('json column', async () => {
+    const object = {
+      'name': '颜色',
+      'value': 'color',
+      'options': [{
+        'name': '黑色',
+        'value': 'black'
+      }]
+    }
+    const post = await Post.forge().save({
+      title: 'a',
+      content: 'b',
+      object: object,
+      test1: 'abc'
+    })
+    expect(post.get('object')).toEqual(object)
+    const fetched = await Post.findById(post.get('id'))
+    expect(fetched.get('object')).toEqual(object)
+    const saved = await fetched.save({title: 'saved', object})
+    expect(saved.get('object')).toEqual(object)
+  })
+  it('json column array', async () => {
+    const object = [{
       'name': '颜色',
       'value': 'color',
       'options': [{
@@ -50,9 +73,13 @@ describe('RESTful API1', function () {
     const post = await Post.forge().save({
       title: 'a',
       content: 'b',
-      array,
+      object: object,
       test1: 'abc'
     })
-    expect(post.get('array')).toEqual(array)
+    expect(post.get('object')).toEqual(object)
+    const fetched = await Post.findById(post.get('id'))
+    expect(fetched.get('object')).toEqual(object)
+    const saved = await fetched.save({title: 'edit', object})
+    expect(saved.get('object')).toEqual(object)
   })
 })
