@@ -1,4 +1,4 @@
-const { Koapi, router, middlewares, logger } = require('../lib')
+const { Koapi, router, middlewares } = require('../lib')
 const request = require('supertest')
 const internal = []
 const { afterAll, describe, it, expect } = global
