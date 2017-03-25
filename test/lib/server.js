@@ -1,6 +1,6 @@
 const knexConfig = require('../knex/knexfile')
 const Raw = require('knex/lib/raw')
-const { Koapi, middlewares, model, router: { ResourceRouter, AggregateRouter } } = require('../../lib')
+const { Koapi, middlewares, model, router } = require('../../lib')
 const Joi = require('joi')
 const md5 = require('blueimp-md5')
 const _ = require('lodash')
@@ -67,7 +67,7 @@ const setup = (config) => {
 }
 
 const {server, app} = setup(app => {
-  const posts = ResourceRouter.define({
+  const posts = router.define('resource', {
     collection: model.collection('Post'),
     setup (router) {
       router.create(async (ctx, next) => {
@@ -91,14 +91,14 @@ const {server, app} = setup(app => {
       router.destroy()
     }
   })
-  const comments = ResourceRouter.define({
+  const comments = router.define('resource', {
     collection: ctx => ctx.state.parents.post.comments(),
     name: 'comments',
     setup (router) {
       router.crud()
     }
   })
-  const aggregate = AggregateRouter.define(router => {
+  const aggregate = router.define('aggregate', router => {
     router.aggregate(Post.collection(), {
       filterable: ['test1'],
       searchable: ['title'],
