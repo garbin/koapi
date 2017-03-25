@@ -7,21 +7,21 @@ const _ = require('lodash')
 
 const { connection } = model.connect(knexConfig.test)
 
-const Category = class extends model.base() {
+const Category = model.define('Category', class extends model.base() {
   get tableName () { return 'categories' }
   get hasTimestamps () { return false }
   posts () {
     return this.belongsToMany(Post, 'category2post').withPivot(['category_id'])
   }
-}
+})
 
-const Comment = class extends model.base() {
+const Comment = model.define('Comment', class extends model.base() {
   get tableName () { return 'comments' }
   get hasTimestamps () { return false }
   get unique () { return ['title'] }
-}
+})
 
-const Post = class extends model.base() {
+const Post = model.define('Post', class extends model.base() {
   static get fields () {
     return Joi.object().keys({
       title: Joi.string().required(),
@@ -55,7 +55,7 @@ const Post = class extends model.base() {
   categories () {
     return this.belongsToMany(Category, 'category2post')
   }
-}
+})
 
 const setup = (config) => {
   let app = new Koapi()
@@ -68,7 +68,7 @@ const setup = (config) => {
 
 const {server, app} = setup(app => {
   const posts = ResourceRouter.define({
-    collection: Post.collection(),
+    collection: model.collection('Post'),
     setup (router) {
       router.create(async (ctx, next) => {
         ctx.state.attributes = ctx.request.body

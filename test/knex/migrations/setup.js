@@ -16,7 +16,7 @@ exports.up = function (knex, Promise) {
     table.timestamp('updated_at').notNullable().defaultTo(knex.fn.now())
   }).createTable('comments', function (table) {
     table.increments('id').primary()
-    table.string('title').unique()
+    table.string('title')
     table.text('content')
     table.integer('user_id')
     table.integer('post_id')
