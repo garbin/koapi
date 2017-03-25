@@ -1,4 +1,4 @@
-const { Koapi, router: { Router }, middlewares, logger } = require('../lib')
+const { Koapi, router, middlewares, logger } = require('../lib')
 const request = require('supertest')
 const internal = []
 const { afterAll, describe, it, expect } = global
@@ -31,9 +31,9 @@ describe('advanced', () => {
       } catch (e) { throw e }
     })
     app.routers([
-      (new Router()).get('/', async ctx => { ctx.body = 'Hello World' }).routes(),
-      Router.define(router => router.get('/test', async ctx => { ctx.body = 'test' })),
-      Router.define(router => router.get('/error', async ctx => { throw new Error('error') }))
+      (new router.Router()).get('/', async ctx => { ctx.body = 'Hello World' }).routes(),
+      router.define(router => router.get('/test', async ctx => { ctx.body = 'test' })),
+      router.define(router => router.get('/error', async ctx => { throw new Error('error') }))
     ])
   })
   it('should get 200 ok', () =>
@@ -67,8 +67,8 @@ describe('advanced', () => {
 describe('haha', () => {
   let { server } = setup(app => {
     app.routers([
-      middlewares.subdomain('api.*', (new Router()).get('/', ctx => { ctx.body = 'api' }).routes()),
-      (new Router()).get('/', ctx => { ctx.body = 'index' }).routes()
+      middlewares.subdomain('api.*', (new router.Router()).get('/', ctx => { ctx.body = 'api' }).routes()),
+      (new router.Router()).get('/', ctx => { ctx.body = 'index' }).routes()
     ])
   })
 
