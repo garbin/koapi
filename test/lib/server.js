@@ -114,10 +114,10 @@ const {server, app} = setup(app => {
     })
   })
   posts.children(comments)
+  app.teardown(() => {
+    connection.destroy()
+  })
   app.bodyparser()
   app.routers([ posts, aggregate ])
-})
-server.on('close', function () {
-  connection.destroy()
 })
 module.exports = { server, app, Category, Post, Comment }
