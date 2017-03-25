@@ -26,19 +26,22 @@ const Post = class extends model.base() {
     return Joi.object().keys({
       title: Joi.string().required(),
       content: Joi.string().required(),
+      slug: Joi.string(),
+      password: Joi.string(),
+      user_id: Joi.number(),
       tags: Joi.array(),
-      object: [Joi.object(), Joi.array()],
-      native_object: Joi.object(),
+      object: Joi.object(),
+      array: Joi.array(),
       test1: Joi.string(),
       test2: Joi.string()
     }).or(['test1', 'test2'])
   }
-  static get jsonColumns () {
-    return ['object', 'tags']
-  }
-  static get format () {
+  static formatters ({onlyChanged, always, json}) {
     return {
-      test1: md5
+      password: onlyChanged(md5),
+      tags: json(),
+      object: json(),
+      array: json()
     }
   }
   static get dependents () {

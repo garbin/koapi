@@ -42,6 +42,7 @@
     "bookshelf-cascade-delete": "^2.0.0",
     "bookshelf-json-columns": "^2.1.0",
     "bookshelf-mask": "^2.0.1",
+    "bookshelf-modelbase": "^2.10.3",
     "bookshelf-paranoia": "^0.9.0",
     "bookshelf-uuid": "^1.0.0",
     "isipaddress": "0.0.2",
