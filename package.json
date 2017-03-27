@@ -6,6 +6,9 @@
   "bin": {
     "koapi": "./bin/koapi.js"
   },
+  "koapi": {
+    "config": "./test/lib/config"
+  },
   "jest": {
     "moduleFileExtensions": [
       "js",
@@ -45,6 +48,7 @@
     "bookshelf-modelbase": "^2.10.3",
     "bookshelf-paranoia": "^0.9.0",
     "bookshelf-uuid": "^1.0.0",
+    "dot-prop": "^4.1.1",
     "isipaddress": "0.0.2",
     "jest": "^18.1.0",
     "joi": "^9.2.0",
