@@ -1,6 +1,8 @@
 const { Koapi, router, middlewares } = require('../lib')
 const request = require('supertest')
 const internal = []
+const path = require('path')
+const fs = require('fs')
 const { afterAll, describe, it, expect } = global
 
 afterAll(() => internal.forEach(server => server.close()))
@@ -32,6 +34,7 @@ describe('advanced', () => {
     })
     app.routers([
       (new router.Router()).get('/', async ctx => { ctx.body = 'Hello World' }).routes(),
+      router.define(router => router.post('/upload', async ctx => { ctx.status = 201 })),
       router.define(router => router.get('/test', async ctx => { ctx.body = 'test' })),
       router.define(router => router.get('/error', async ctx => { throw new Error('error') }))
     ])
@@ -56,6 +59,12 @@ describe('advanced', () => {
                                   expect(res.status).toBe(200)
                                   expect(res.text).toBe('test')
                                 }))
+  it('should upload 201 created', () => request(server)
+                                  .post('/upload')
+                                  .attach('file', fs.readFileSync(path.resolve(__dirname, 'lib/upload.txt')))
+                                  .then(res => {
+                                    expect(res.status).toBe(201)
+                                  }))
   it('should have _specs', () => request(server)
                                   .get('/_specs')
                                   .set('Accept', 'application/json')
