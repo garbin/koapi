@@ -1,6 +1,6 @@
 {
   "name": "koapi",
-  "version": "0.5.13",
+  "version": "0.5.14",
   "description": "RESTful API framework based on koajs",
   "main": "lib/index.js",
   "bin": {
