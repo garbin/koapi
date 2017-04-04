@@ -19,6 +19,14 @@ class Comment extends model.base() {
   get tableName () { return 'comments' }
   get hasTimestamps () { return false }
   get unique () { return ['title'] }
+  static get fields () {
+    return {
+      title: Joi.string().min(1).required(),
+      content: Joi.string(),
+      user_id: Joi.number().integer(),
+      post_id: Joi.number().integer()
+    }
+  }
 }
 
 class Post extends model.base() {
