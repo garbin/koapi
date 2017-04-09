@@ -91,9 +91,11 @@ const {server, app} = setup(app => {
         }
         await next()
       }, {
-        sortable: ['created_at'],
-        filterable: [ 'user_id', 'category_id' ],
-        searchable: ['title', 'content']
+        list: {
+          sortable: ['created_at'],
+          filterable: [ 'user_id', 'category_id' ],
+          searchable: ['title', 'content']
+        }
       })
       router.update()
       router.destroy()
