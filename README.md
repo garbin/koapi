@@ -47,11 +47,11 @@ model.connect({
 })
 
 
-class Comment extends model.base() {
+class Comment extends model.Base {
   get tableName () { return 'comments' }
   get hasTimestamps () { return true }
 }
-class Post extends model.base() {
+class Post extends model.Base {
   get tableName () { return 'posts' }
   get hasTimestamps () { return true }
   comments () {

@@ -7,7 +7,7 @@ const _ = require('lodash')
 
 const { connection } = model.connect(knexConfig.test)
 
-class Category extends model.base() {
+class Category extends model.Base {
   get tableName () { return 'categories' }
   get hasTimestamps () { return false }
   posts () {
@@ -15,7 +15,7 @@ class Category extends model.base() {
   }
 }
 
-class Comment extends model.base() {
+class Comment extends model.Base {
   get tableName () { return 'comments' }
   get hasTimestamps () { return false }
   get unique () { return ['title'] }
@@ -29,7 +29,7 @@ class Comment extends model.base() {
   }
 }
 
-class Post extends model.base() {
+class Post extends model.Base {
   static get fields () {
     return Joi.object().keys({
       title: Joi.string().required(),
