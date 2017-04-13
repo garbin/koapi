@@ -67,10 +67,7 @@ class Post extends model.base() {
 
 const setup = (config) => {
   const app = new Koapi()
-  app.use(middlewares.initialize([
-    'jsonError',
-    { name: 'compress', options: {} }
-  ]))
+  app.use(middlewares.bundle())
   config(app)
   const server = app.listen(null)
   return {app, server}
@@ -127,7 +124,6 @@ const {server, app} = setup(app => {
   })
   posts.children(comments)
   app.on('close', () => connection.destroy())
-  app.use(middlewares.bodyparser())
   app.use(middlewares.routers([posts, aggregate]))
 })
 module.exports = { server, app, Category, Post, Comment }
