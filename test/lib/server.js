@@ -67,7 +67,7 @@ class Post extends model.base() {
 
 const setup = (config) => {
   const app = new Koapi()
-  app.use(middlewares.bundle())
+  app.use(middlewares.preset('restful'))
   config(app)
   const server = app.listen(null)
   return {app, server}
