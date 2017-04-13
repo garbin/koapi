@@ -31,7 +31,7 @@ npm install koapi
 
 ##### app.js
 ```js
-const { Koapi, router: { ResourceRouter }, model } = require('koapi')
+const { Koapi, router, middlewares, model } = require('koapi')
 
 const app = new Koapi();
 
@@ -66,9 +66,9 @@ class Post extends model.base() {
 // GET  /posts/:id
 // PATCH /posts/:id
 // DELETE /posts/:id
-const posts = ResourceRouter.define(Post.collection());
+const posts = router.define('resource', Post.collection());
 
-const comments = ResourceRouter.define({
+const comments = router.define('resource', {
   collection: ctx => ctx.state.parents.post.comments(),
   setup(router){
     // method "crud" is a shortcut for "create", "read", "update" and "destroy"
@@ -88,8 +88,8 @@ const comments = ResourceRouter.define({
 posts.children(comments)
 
 /****************** Run server ******************/
-app.bodyparser();
-app.routers([ posts ]);
+app.use(middlewares.preset('restful'))
+app.use(middlewares.routers([ posts ]))
 
 app.listen(3000);
 ```

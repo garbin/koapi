@@ -70,6 +70,7 @@ const setup = (config) => {
   app.use(middlewares.preset('restful'))
   config(app)
   const server = app.listen(null)
+  server.on('close', () => connection.destroy())
   return {app, server}
 }
 
@@ -123,7 +124,6 @@ const {server, app} = setup(app => {
     })
   })
   posts.children(comments)
-  app.on('close', () => connection.destroy())
   app.use(middlewares.routers([posts, aggregate]))
 })
 module.exports = { server, app, Category, Post, Comment }
