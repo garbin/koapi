@@ -3,11 +3,16 @@ const { restful } = require('../lib/test')
 const { describe } = global
 
 describe('RESTful API', function () {
-  const comments = restful(server, '/posts/1/comments')
-  const comment = {
+  const comments = restful(server, '/posts', '/comments')
+  comments.setup(null, {
+    title: 'abc',
+    content: 'haha',
+    tags: ['a', 'b'],
+    test1: 'haha'
+  }, {
     title: 'abc',
     content: 'haha',
     user_id: 1
-  }
-  comments.setup(comment).crud({patch: {title: '321'}})
+  })
+  comments.crud({patch: {title: '321'}})
 })
