@@ -102,7 +102,7 @@ const {server, app} = setup(app => {
     }
   })
   const comments = router.define('resource', {
-    collection: ctx => ctx.state.parents.post.comments(),
+    collection: ctx => ctx.state.nested.post.comments(),
     name: 'comments',
     setup (router) {
       router.crud()
