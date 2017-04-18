@@ -17,6 +17,6 @@ describe('RESTful API1', function () {
       title: '123'
     }
   })
-  posts.read({ data })
+  posts.read({list: {data}, item: {data}})
   posts.destroy({ data })
 })

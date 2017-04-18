@@ -29,7 +29,12 @@ describe('RESTful API', function () {
     expect(res.body).toBeInstanceOf(Array)
     expect(res.body[0].total).toBe('1')
   })
-  posts.setup(null, demo).crud({patch: {title: '123'}})
+  posts.setup(null, demo)
+  posts.create()
+  posts.list()
+  posts.item()
+  posts.update({patch: {title: '123'}})
+  posts.destroy()
   test('search', async () => {
     const res = await request(server).get('/posts?q=title')
     expect(res.status).toBe(200)
