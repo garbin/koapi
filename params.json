@@ -1,7 +1,0 @@
-{
-  "name": "Koapi",
-  "tagline": "RESTful API framework based on koa and bookshelf",
-  "body": "# Koapi\r\n\r\nRESTful API framework based on koa and bookshelf\r\n\r\n# Build a RESTful API with `Koa` will be dead simple\r\n\r\n## 1. server.js\r\n\r\n```js\r\nimport Koapi, {Router} from './src/koapi';\r\n\r\nconst app = new Koapi();\r\n\r\n// Router\r\nconst posts = new Router();\r\nposts.get('/', function*(){\r\n  this.body = 'Hello World';\r\n});\r\n\r\napp.run({\r\n  port: 4000,\r\n  debug: true,\r\n  cors: true,\r\n  serve: {\r\n    root: __dirname + '/public', // serve static file in ./public\r\n  },\r\n  routers: [ posts ], // Routers\r\n});\r\n```\r\n\r\n## 2. run server.js\r\n\r\n```bash\r\nbabel-node server.js\r\n```\r\n",
-  "google": "",
-  "note": "Don't delete this file! It's used internally to help with page regeneration."
-}
