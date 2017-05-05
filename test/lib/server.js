@@ -13,6 +13,11 @@ class Category extends model.Base {
   posts () {
     return this.belongsToMany(Post, 'category2post').withPivot(['category_id'])
   }
+  static get fields () {
+    return {
+      category_name: Joi.string().required()
+    }
+  }
 }
 
 class Comment extends model.Base {
@@ -132,7 +137,8 @@ const {server, app} = setup(app => {
       ]
     })
   })
+  const categories = router.define('resource', Category)
   posts.children(comments)
-  app.use(middlewares.routers([posts, aggregate]))
+  app.use(middlewares.routers([posts, aggregate, categories]))
 })
 module.exports = { server, app, Category, Post, Comment }
