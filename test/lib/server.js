@@ -87,7 +87,7 @@ const {server, app} = setup(app => {
       })
       router.read(async (ctx, next) => {
         if (_.get(ctx.request.query, 'filters.category_id')) {
-          ctx.state.query = Post.forge().query(qb => qb.leftJoin('category2post', 'posts.id', 'category2post.post_id'))
+          ctx.state.query = Post.collection().resetQuery().query(qb => qb.leftJoin('category2post', 'posts.id', 'category2post.post_id'))
         }
         await next()
       }, {
