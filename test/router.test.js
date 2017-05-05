@@ -7,7 +7,7 @@ describe('RESTful API', function () {
   const demo = {
     title: 'abc',
     content: 'haha',
-    tags: ['a', 'b'],
+    tags: ['c', 'd'],
     test1: 'haha'
   }
   test('aggregate', async () => {
@@ -36,9 +36,25 @@ describe('RESTful API', function () {
   posts.update({patch: {title: '123'}})
   posts.destroy()
   test('search', async () => {
-    const res = await request(server).get('/posts?q=title')
+    const res = await request(server).get('/posts?q=OnlyForSearch')
     expect(res.status).toBe(200)
     expect(res.body).toBeInstanceOf(Array)
-    expect(res.body.length).not.toBe(0)
+    expect(res.body.length).toBe(1)
+  })
+  test('normal filter', async () => {
+    const res = await request(server).get('/posts?filters[user_id]=1000')
+    expect(res.status).toBe(200)
+    expect(res.body).toBeInstanceOf(Array)
+    expect(res.body.length).toBe(0)
+    const res1 = await request(server).get('/posts?filters[user_id]=500')
+    expect(res1.status).toBe(200)
+    expect(res1.body).toBeInstanceOf(Array)
+    expect(res1.body.length).toBe(1)
+  })
+  test('custom filter', async () => {
+    const res = await request(server).get('/posts?filters[tag]=A')
+    expect(res.status).toBe(200)
+    expect(res.body).toBeInstanceOf(Array)
+    expect(res.body.length).toBe(1)
   })
 })

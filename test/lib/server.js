@@ -76,7 +76,7 @@ const setup = (config) => {
 
 const {server, app} = setup(app => {
   const posts = router.define('resource', {
-    collection: Post.collection(),
+    model: Post,
     setup (router) {
       router.create(async (ctx, next) => {
         ctx.state.attributes = ctx.request.body
@@ -87,13 +87,22 @@ const {server, app} = setup(app => {
       })
       router.read(async (ctx, next) => {
         if (_.get(ctx.request.query, 'filters.category_id')) {
-          ctx.state.query = Post.collection().resetQuery().query(qb => qb.leftJoin('category2post', 'posts.id', 'category2post.post_id'))
+          ctx.state.query = Post.collection().query(q => {
+            return q.leftJoin('category2post', 'posts.id', 'category2post.post_id')
+          })
         }
         await next()
       }, {
         list: {
           sortable: ['created_at'],
-          filterable: [ 'user_id', 'category_id' ],
+          // filterable: [ 'user_id', 'category_id' ],
+          filterable: ({filter, query, filters}) => {
+            filter('user_id')
+            filter('category_id')
+            if (filters.tag) {
+              query.whereRaw('tags::jsonb @> ?', `"${filters.tag}"`)
+            }
+          },
           searchable: ['title', 'content']
         }
       })
@@ -103,7 +112,7 @@ const {server, app} = setup(app => {
   })
   const comments = router.define('resource', {
     collection: ctx => ctx.state.nested.post.comments(),
-    name: 'comments',
+    model: Comment,
     setup (router) {
       router.crud()
     }

@@ -11,8 +11,8 @@ exports.seed = function (knex, Promise) {
     // Inserts seed entries
     knex('posts').insert([
       {title: 'Title', content: 'Content', tags: JSON.stringify(['A', 'B']), user_id: 1, test1: 'hehe'},
-      {title: 'Title', content: 'Content', user_id: 1, test2: 'keke'},
-      {title: 'Title', content: 'Content', user_id: 1, test2: 'dada'}
+      {title: 'Title', content: 'Content', user_id: 500, test2: 'keke'},
+      {title: 'OnlyForSearch', content: 'Content', user_id: 1, test2: 'dada'}
     ]),
     knex('comments').insert([
       {title: 'Title1', content: 'Content', user_id: 1, post_id: 1},
