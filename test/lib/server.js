@@ -1,5 +1,5 @@
 const knexConfig = require('../knex/knexfile')
-const Raw = require('knex/lib/raw')
+const knex = require('knex')
 const { Koapi, middlewares, model, router } = require('../../lib')
 const Joi = require('joi')
 const md5 = require('blueimp-md5')
@@ -123,12 +123,12 @@ const {server, app} = setup(app => {
     }
   })
   const aggregate = router.define('aggregate', router => {
-    router.aggregate(Post.collection(), {
+    router.aggregate(Post, {
       filterable: ['test1'],
       searchable: ['title'],
       dimensions: [
         {
-          column: new Raw().set('created_at::date as created_date'),
+          column: knex.raw('created_at::date as created_date'),
           name: 'created_date'
         }
       ],
