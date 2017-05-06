@@ -66,30 +66,35 @@ class Post extends model.Base {
 // GET  /posts/:id
 // PATCH /posts/:id
 // DELETE /posts/:id
-const posts = router.define('resource', Post.collection());
+class Posts extends router.Resource {
+  get model () { return Post }
+  setup () {
+    this.crud().children(Comments)
+  }
+}
 
-const comments = router.define('resource', {
-  collection: ctx => ctx.state.parents.post.comments(),
-  setup(router){
+class Comments extends router.Resource {
+  get model () { return Comment }
+  collection (ctx) { return ctx.state.parents.post.comments() }
+  setup () {
     // method "crud" is a shortcut for "create", "read", "update" and "destroy"
     // YOU CAN ALSO USE MIDDLEWARE in "create", "read", "update", "destroy"    
-    router.create(async(ctx, next) => {
+    this.create(async(ctx, next) => {
       // you can do anything before create
       await next();
       // you can do anything after create
     });
-    router.read(/* You can place any middleware here if you need */{
+    this.read(/* You can place any middleware here if you need */{
       filterable: ['created_at'], // filterable fields
       sortable: ['created_at'], // sortable fields
     });        
-    router.destroy();
+    this.destroy();
   }
-});
-posts.children(comments)
+}
 
 /****************** Run server ******************/
 app.use(middlewares.preset('restful'))
-app.use(middlewares.routers([ posts ]))
+app.use(middlewares.routers([ Posts ]))
 
 app.listen(3000);
 ```
