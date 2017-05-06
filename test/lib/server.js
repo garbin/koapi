@@ -1,5 +1,4 @@
 const knexConfig = require('../knex/knexfile')
-const knex = require('knex')
 const { Koapi, middlewares, model, router } = require('../../lib')
 const Joi = require('joi')
 const md5 = require('blueimp-md5')
@@ -80,7 +79,7 @@ const setup = (config) => {
 }
 
 const {server, app} = setup(app => {
-  const Posts = class extends router.Resource {
+  class Posts extends router.Resource {
     get model () { return Post }
     setup () {
       this.create(async (ctx, next) => {
@@ -116,11 +115,11 @@ const {server, app} = setup(app => {
       this.children(Comments)
     }
   }
-  const Comments = class extends router.Resource {
+  class Comments extends router.Resource {
     get model () { return Comment }
     collection (ctx) { return ctx.state.nested.post.comments() }
   }
-  const Aggregate = class extends router.Aggregate {
+  class Aggregate extends router.Aggregate {
     setup () {
       this.aggregate(Post, {
         filterable: ['test1'],
@@ -137,7 +136,7 @@ const {server, app} = setup(app => {
       })
     }
   }
-  const Categories = class extends router.Resource {
+  class Categories extends router.Resource {
     get model () { return Category }
   }
   app.use(middlewares.routers([Posts, Aggregate, Categories]))
