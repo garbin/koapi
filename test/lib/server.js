@@ -80,17 +80,17 @@ const setup = (config) => {
 }
 
 const {server, app} = setup(app => {
-  const posts = router.define('resource', {
-    model: Post,
-    setup (router) {
-      router.create(async (ctx, next) => {
+  const Posts = class extends router.Resource {
+    get model () { return Post }
+    setup () {
+      this.create(async (ctx, next) => {
         ctx.state.attributes = ctx.request.body
         ctx.state.attributes.title = 'Hehe'
         await next()
         ctx.body = ctx.body.toJSON()
         ctx.body.haha = 'yes'
       })
-      router.read(async (ctx, next) => {
+      this.read(async (ctx, next) => {
         if (_.get(ctx.request.query, 'filters.category_id')) {
           ctx.state.query = Post.collection().query(q => {
             return q.leftJoin('category2post', 'posts.id', 'category2post.post_id')
@@ -111,34 +111,35 @@ const {server, app} = setup(app => {
           searchable: ['title', 'content']
         }
       })
-      router.update()
-      router.destroy()
+      this.update()
+      this.destroy()
+      this.children(Comments)
     }
-  })
-  const comments = router.define('resource', {
-    collection: ctx => ctx.state.nested.post.comments(),
-    model: Comment,
-    setup (router) {
-      router.crud()
+  }
+  const Comments = class extends router.Resource {
+    get model () { return Comment }
+    collection (ctx) { return ctx.state.nested.post.comments() }
+  }
+  const Aggregate = class extends router.Aggregate {
+    setup () {
+      this.aggregate(Post, {
+        filterable: ['test1'],
+        searchable: ['title'],
+        dimensions: [
+          {
+            column: connection.raw('created_at::date as created_date'),
+            name: 'created_date'
+          }
+        ],
+        metrics: [
+          { name: 'total', aggregate: 'count', column: 'id as total' }
+        ]
+      })
     }
-  })
-  const aggregate = router.define('aggregate', router => {
-    router.aggregate(Post, {
-      filterable: ['test1'],
-      searchable: ['title'],
-      dimensions: [
-        {
-          column: knex.raw('created_at::date as created_date'),
-          name: 'created_date'
-        }
-      ],
-      metrics: [
-        { name: 'total', aggregate: 'count', column: 'id as total' }
-      ]
-    })
-  })
-  const categories = router.define('resource', Category)
-  posts.children(comments)
-  app.use(middlewares.routers([posts, aggregate, categories]))
+  }
+  const Categories = class extends router.Resource {
+    get model () { return Category }
+  }
+  app.use(middlewares.routers([Posts, Aggregate, Categories]))
 })
 module.exports = { server, app, Category, Post, Comment }

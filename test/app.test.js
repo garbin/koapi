@@ -33,10 +33,14 @@ describe('advanced', () => {
       } catch (e) { throw e }
     })
     app.use(middlewares.routers([
-      (new router.Router()).get('/', async ctx => { ctx.body = 'Hello World' }).routes(),
-      router.define(router => router.post('/upload', async ctx => { ctx.status = 201 })),
-      router.define(router => router.get('/test', async ctx => { ctx.body = 'test' })),
-      router.define(router => router.get('/error', async ctx => { throw new Error('error') }))
+      new router.Base().get('/', async ctx => { ctx.body = 'Hello World' }),
+      class extends router.Base {
+        setup () {
+          this.post('/upload', async ctx => { ctx.status = 201 })
+          this.get('/test', async ctx => { ctx.body = 'test' })
+          this.get('/error', async ctx => { throw new Error('error') })
+        }
+      }
     ]))
   })
   it('should get 200 ok', () =>
@@ -70,8 +74,8 @@ describe('advanced', () => {
 describe('haha', () => {
   let { server } = setup(app => {
     app.use(middlewares.routers([
-      middlewares.subdomain('api.*', (new router.Router()).get('/', ctx => { ctx.body = 'api' }).routes()),
-      (new router.Router()).get('/', ctx => { ctx.body = 'index' }).routes()
+      middlewares.subdomain('api.*', new router.Base().get('/', ctx => { ctx.body = 'api' }).routes()),
+      new router.Base().get('/', ctx => { ctx.body = 'index' })
     ]))
   })
 
