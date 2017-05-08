@@ -29,30 +29,41 @@ describe('RESTful API', function () {
     expect(res.body).toBeInstanceOf(Array)
     expect(res.body[0].total).toBe('1')
   })
-  posts.setup(null, demo)
-  posts.create()
-  posts.list()
-  posts.item()
-  posts.update({patch: {title: '123'}})
-  posts.destroy()
+  posts.setup(req => req.query({before: 'before'}), demo)
+  posts.create({
+    before: (req, data) => req.query({before: data.id})
+  })
+  posts.list({
+    before: (req, data) => req.query({before: data.id})
+  })
+  posts.item({
+    before: (req, data) => req.query({before: data.id})
+  })
+  posts.update({
+    before: (req, data) => req.query({before: data.id}),
+    patch: {title: '123'}
+  })
+  posts.destroy({
+    before: (req, data) => req.query({before: data.id})
+  })
   test('search', async () => {
-    const res = await request(server).get('/posts?q=OnlyForSearch')
+    const res = await request(server).get('/posts?before=abc&q=OnlyForSearch')
     expect(res.status).toBe(200)
     expect(res.body).toBeInstanceOf(Array)
     expect(res.body.length).toBe(1)
   })
   test('normal filter', async () => {
-    const res = await request(server).get('/posts?filters[user_id]=1000')
+    const res = await request(server).get('/posts?before=abc&filters[user_id]=1000')
     expect(res.status).toBe(200)
     expect(res.body).toBeInstanceOf(Array)
     expect(res.body.length).toBe(0)
-    const res1 = await request(server).get('/posts?filters[user_id]=500')
+    const res1 = await request(server).get('/posts?before=abc&filters[user_id]=500')
     expect(res1.status).toBe(200)
     expect(res1.body).toBeInstanceOf(Array)
     expect(res1.body.length).toBe(1)
   })
   test('custom filter', async () => {
-    const res = await request(server).get('/posts?filters[tag]=A')
+    const res = await request(server).get('/posts?before=abc&filters[tag]=A')
     expect(res.status).toBe(200)
     expect(res.body).toBeInstanceOf(Array)
     expect(res.body.length).toBe(1)

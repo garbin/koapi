@@ -82,6 +82,12 @@ const {server, app} = setup(app => {
   class Posts extends router.Resource {
     get model () { return Post }
     setup () {
+      this.use(async (ctx, next) => {
+        if (!ctx.request.query.before) {
+          return ctx.throw('before is required')
+        }
+        await next()
+      })
       this.create(async (ctx, next) => {
         ctx.state.attributes = ctx.request.body
         ctx.state.attributes.title = 'Hehe'
