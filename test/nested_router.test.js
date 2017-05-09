@@ -4,7 +4,7 @@ const { describe } = global
 
 describe('RESTful API', function () {
   const comments = restful(server, '/posts', '/comments')
-  comments.setup(null, {
+  comments.setup(req => req.query({before: 'abc'}), {
     title: 'abc',
     content: 'haha',
     tags: ['a', 'b'],

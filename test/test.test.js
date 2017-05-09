@@ -10,13 +10,30 @@ describe('RESTful API1', function () {
     tags: ['a', 'b'],
     test1: 'haha'
   }
-  posts.create({ data })
+  posts.create({
+    before (req) {
+      return req.query({before: 'abc'})
+    },
+    data
+  })
   posts.update({
+    before: req => req.query({before: 'abc'}),
     data,
     patch: {
       title: '123'
     }
   })
-  posts.read({list: {data}, item: {data}})
-  posts.destroy({ data })
+  posts.read({list: {
+    before: req => req.query({before: 'abc'}),
+    data
+  },
+    item: {
+      before: req => req.query({before: 'abc'}),
+      data
+    }
+  })
+  posts.destroy({
+    before: req => req.query({before: 'abc'}),
+    data
+  })
 })

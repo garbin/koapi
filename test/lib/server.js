@@ -82,6 +82,7 @@ const {server, app} = setup(app => {
   class Posts extends router.Resource {
     get model () { return Post }
     setup () {
+      this.children(Comments)
       this.use(async (ctx, next) => {
         if (!ctx.request.query.before) {
           return ctx.throw('before is required')
@@ -118,7 +119,6 @@ const {server, app} = setup(app => {
       })
       this.update()
       this.destroy()
-      this.children(Comments)
     }
   }
   class Comments extends router.Resource {
