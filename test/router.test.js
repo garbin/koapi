@@ -7,14 +7,11 @@ afterAll(async () => {
   await Promise.promisify(server.close).call(server)
 })
 
-describe('RESTful API 1', function () {
-  const posts = restful(server, '/posts', {teardown: false})
-  const demo = {
-    title: 'abc',
-    content: 'haha',
-    tags: ['c', 'd'],
-    test1: 'haha'
-  }
+function addQuery (before = 'abc') {
+  return req => req.query({before})
+}
+
+describe('Aggregate', () => {
   test('aggregate', async () => {
     const res = await request(server).get('/aggregate/posts')
     expect(res.status).toBe(200)
@@ -34,23 +31,9 @@ describe('RESTful API 1', function () {
     expect(res.body).toBeInstanceOf(Array)
     expect(res.body[0].total).toBe('1')
   })
-  posts.setup(req => req.query({before: 'before'}), demo)
-  posts.create({
-    before: (req, data) => req.query({before: data.id})
-  })
-  posts.list({
-    before: (req, data) => req.query({before: data.id})
-  })
-  posts.item({
-    before: (req, data) => req.query({before: data.id})
-  })
-  posts.update({
-    before: (req, data) => req.query({before: data.id}),
-    patch: {title: '123'}
-  })
-  posts.destroy({
-    before: (req, data) => req.query({before: data.id})
-  })
+})
+
+describe('search & filter', () => {
   test('search', async () => {
     const res = await request(server).get('/posts?before=abc&q=OnlyForSearch')
     expect(res.status).toBe(200)
@@ -75,63 +58,102 @@ describe('RESTful API 1', function () {
   })
 })
 
-describe('RESTful API 2', function () {
-  const comments = restful(server, '/posts', '/comments', {teardown: false})
-  comments.setup(req => req.query({before: 'abc'}), {
-    title: 'abc',
-    content: 'haha',
-    tags: ['a', 'b'],
+describe('RESTful Tester Basic', () => {
+  const posts = restful(server, '/posts', {teardown: false})
+  posts.create({
+    title: 'Basic',
+    content: 'Basic Content',
+    tags: ['c', 'd'],
     test1: 'haha'
   }, {
-    title: 'abc',
-    content: 'haha',
-    user_id: 1
+    use: addQuery(),
+    assert (res, {success}) {
+      success(res, false)
+      expect(res.body.title).toBe('Hehe')
+    }
   })
-  comments.crud({patch: {title: '321'}})
+  posts.list(async ({req}) => {
+    await req.query({before: 'abc'}).send({
+      title: 'Basic',
+      content: 'Basic Content',
+      tags: ['c', 'd'],
+      test1: 'haha'
+    })
+  }, {
+    use: addQuery(),
+    assert (res) {
+      expect(res.status).toBe(200)
+      expect(res.body).toBeInstanceOf(Array)
+    }
+  })
+  posts.item(async ({req}) => {
+    return await req.query({before: 'abc'}).send({
+      title: 'Basic',
+      content: 'Basic Content',
+      tags: ['c', 'd'],
+      test1: 'haha'
+    })
+  }, {
+    use: addQuery(),
+    assert (res, {success, item}) {
+      success(res)
+      // TODO
+    }
+  })
+  posts.update(async ({req}) => {
+    return await req.query({before: 'abc'}).send({
+      title: 'Basic',
+      content: 'Basic Content',
+      tags: ['c', 'd'],
+      test1: 'haha'
+    })
+  }, {
+    use: addQuery(),
+    patch: {title: 'Patched'}
+  })
+  posts.destroy(async ({req}) => {
+    return await req.query({before: 'abc'}).send({
+      title: 'Basic',
+      content: 'Basic Content',
+      tags: ['c', 'd'],
+      test1: 'haha'
+    })
+  }, { use: addQuery() })
 })
-
-describe('RESTful API base', function () {
+describe('RESTful Tester Setup', () => {
   const posts = restful(server, '/posts', {teardown: false})
-  const data = {
-    title: 'abc',
-    content: 'haha',
-    tags: ['a', 'b'],
-    test1: 'haha'
-  }
-  posts.create({
-    before (req) {
-      return req.query({before: 'abc'})
-    },
-    data
+  posts.setup(async ({request}) => {
+    return await request([{
+      title: 'setup',
+      content: 'setup content',
+      tags: ['c', 'd'],
+      test1: 'haha'
+    }], {
+      use: addQuery()
+    })
   })
-  posts.update({
-    before: req => req.query({before: 'abc'}),
-    data,
-    patch: {
-      title: '123'
-    }
-  })
-  posts.read({list: {
-    before: req => req.query({before: 'abc'}),
-    data
-  },
-    item: {
-      before: req => req.query({before: 'abc'}),
-      data
-    }
-  })
-  posts.destroy({
-    before: req => req.query({before: 'abc'}),
-    data
-  })
+  posts.use(addQuery())
+  posts.crud({patch: {title: 'patched'}})
 })
 
-describe('RESTful API category', function () {
-  const categories = restful(server, '/categories', {teardown: false})
-  const demo = {
-    category_name: 'Haha'
-  }
-  categories.setup(null, demo).crud({
-    patch: {category_name: '123'}
+describe('RESTful Tester Nested', () => {
+  const comments = restful(server, ['/posts', '/comments'], {teardown: false})
+  comments.setup(async ({request}) => {
+    return await request([
+      {
+        title: 'abc',
+        content: 'nested post',
+        tags: ['c', 'd'],
+        test1: 'haha'
+      },
+      {
+        title: 'abc',
+        content: 'nested comment',
+        user_id: 1
+      }
+    ], {
+      use: addQuery()
+    })
   })
+  comments.crud({patch: {title: 'patched comment'}})
 })
