@@ -5,7 +5,7 @@ const _ = require('lodash')
 
 afterAll(() => { server.close() })
 
-describe('RESTful API1', function () {
+describe('model', function () {
   it('validate', async () => {
     const data = {
       title: 'a',

@@ -1,9 +1,14 @@
 const { server } = require('./lib/server')
 const { restful, request } = require('../lib/test')
-const { describe, test, expect } = global
+const Promise = require('bluebird')
+const { describe, test, afterAll, expect } = global
 
-describe('RESTful API', function () {
-  const posts = restful(server, '/posts')
+afterAll(async () => {
+  await Promise.promisify(server.close).call(server)
+})
+
+describe('RESTful API 1', function () {
+  const posts = restful(server, '/posts', {teardown: false})
   const demo = {
     title: 'abc',
     content: 'haha',
@@ -67,5 +72,66 @@ describe('RESTful API', function () {
     expect(res.status).toBe(200)
     expect(res.body).toBeInstanceOf(Array)
     expect(res.body.length).toBe(1)
+  })
+})
+
+describe('RESTful API 2', function () {
+  const comments = restful(server, '/posts', '/comments', {teardown: false})
+  comments.setup(req => req.query({before: 'abc'}), {
+    title: 'abc',
+    content: 'haha',
+    tags: ['a', 'b'],
+    test1: 'haha'
+  }, {
+    title: 'abc',
+    content: 'haha',
+    user_id: 1
+  })
+  comments.crud({patch: {title: '321'}})
+})
+
+describe('RESTful API base', function () {
+  const posts = restful(server, '/posts', {teardown: false})
+  const data = {
+    title: 'abc',
+    content: 'haha',
+    tags: ['a', 'b'],
+    test1: 'haha'
+  }
+  posts.create({
+    before (req) {
+      return req.query({before: 'abc'})
+    },
+    data
+  })
+  posts.update({
+    before: req => req.query({before: 'abc'}),
+    data,
+    patch: {
+      title: '123'
+    }
+  })
+  posts.read({list: {
+    before: req => req.query({before: 'abc'}),
+    data
+  },
+    item: {
+      before: req => req.query({before: 'abc'}),
+      data
+    }
+  })
+  posts.destroy({
+    before: req => req.query({before: 'abc'}),
+    data
+  })
+})
+
+describe('RESTful API category', function () {
+  const categories = restful(server, '/categories', {teardown: false})
+  const demo = {
+    category_name: 'Haha'
+  }
+  categories.setup(null, demo).crud({
+    patch: {category_name: '123'}
   })
 })
