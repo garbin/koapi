@@ -122,8 +122,8 @@ describe('RESTful Tester Basic', () => {
 })
 describe('RESTful Tester Setup', () => {
   const posts = restful(server, '/posts', {teardown: false})
-  posts.setup(async ({request}) => {
-    return await request([{
+  posts.setup(async ({create}) => {
+    return await create([{
       title: 'setup',
       content: 'setup content',
       tags: ['c', 'd'],
@@ -138,8 +138,8 @@ describe('RESTful Tester Setup', () => {
 
 describe('RESTful Tester Nested', () => {
   const comments = restful(server, ['/posts', '/comments'], {teardown: false})
-  comments.setup(async ({request}) => {
-    return await request([
+  comments.setup(async ({create}) => {
+    return await create([
       {
         title: 'abc',
         content: 'nested post',
