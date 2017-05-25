@@ -21,6 +21,34 @@ describe('GraphQL', () => {
     expect(response.status).toBe(200)
     expect(response.body.data.posts).toBeInstanceOf(Array)
   })
+  test('search', async () => {
+    const response = await request(server).post('/graphql').send({query: `
+        query RootQuery {
+          search {
+            totalCount
+            edges {
+              node {
+                id
+                title
+                comments {
+                  id
+                  title
+                }
+              }
+              cursor
+            }
+            pageInfo {
+              endCursor
+            }
+          }
+        }
+    `})
+    expect(response.status).toBe(200)
+    expect(response.body.data.search.edges).toBeInstanceOf(Array)
+    console.log(JSON.stringify(response.body, true, 2))
+    expect(response.body.data.search.edges[0].cursor).not.toBe(null)
+    expect(response.body.data.search.edges[0].node).not.toBe(null)
+  })
   test('nested', async () => {
     const response = await request(server).post('/graphql').send({query: `
         query RootQuery {
@@ -36,7 +64,6 @@ describe('GraphQL', () => {
           }
         }
     `})
-    console.log(response.body)
     expect(response.status).toBe(200)
     expect(response.body.data.posts).toBeInstanceOf(Array)
   })
@@ -72,7 +99,6 @@ describe('GraphQL', () => {
           }
         }
     `})
-    console.log(response.body)
     expect(response.status).toBe(200)
     expect(response.body.data.removePost.id).toBe(1)
   })

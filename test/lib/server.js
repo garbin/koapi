@@ -202,9 +202,25 @@ const {server, app} = setup(app => {
         )
       }
     },
+    formatError: console.error,
     schema: graphql.schema([graphql.type(`
+      type Node {
+        node: Post
+        cursor: Int
+      }
+      type PageInfo {
+        startCursor: String
+        endCursor: String
+        hasNextPage: Boolean
+      }
+      type Connection {
+        totalCount: Int
+        edges: [Node]
+        pageInfo: PageInfo
+      }
       type RootQuery {
-        posts: [Post]
+        posts(first: Int, after: Int): [Post]
+        search(first: Int, after: Int): Connection
         post(id: Int!): Post
       }
       type Mutation {
@@ -212,10 +228,30 @@ const {server, app} = setup(app => {
       }
       schema { query: RootQuery, mutation: Mutation }
     `, {
+      Connection: {
+        totalCount: connection => connection.totalCount,
+        edges: connection => connection.edges.map(node => ({node, cursor: node.id})),
+        pageInfo: connection => connection.pageInfo
+      },
       RootQuery: {
-        async posts () {
+        async posts (root, {first = 10, after}) {
           const items = await Post.findAll()
           return items
+        },
+        async search (root, {first = 10, after}) {
+          const result = await Post.forge().fetchPage({
+            limit: first,
+            offset: after
+          })
+          return {
+            totalCount: result.pagination.rowCount,
+            edges: result.models,
+            pageInfo: {
+              startCursor: Post.collection(result.models).first().id,
+              endCursor: Post.collection(result.models).last().id,
+              hasNextPage: true
+            }
+          }
         },
         async post (root, {id}) {
           const item = await Post.findById(id)
