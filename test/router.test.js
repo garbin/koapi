@@ -73,12 +73,13 @@ describe('RESTful Tester Basic', () => {
     }
   })
   posts.list(async ({req}) => {
-    await req.query({before: 'abc'}).send({
+    const items = await req.query({before: 'abc'}).send({
       title: 'Basic',
       content: 'Basic Content',
       tags: ['c', 'd'],
       test1: 'haha'
     })
+    return items
   }, {
     use: addQuery(),
     assert (res) {
@@ -87,12 +88,13 @@ describe('RESTful Tester Basic', () => {
     }
   })
   posts.item(async ({req}) => {
-    return await req.query({before: 'abc'}).send({
+    const item = await req.query({before: 'abc'}).send({
       title: 'Basic',
       content: 'Basic Content',
       tags: ['c', 'd'],
       test1: 'haha'
     })
+    return item
   }, {
     use: addQuery(),
     assert (res, {success, item}) {
@@ -101,29 +103,31 @@ describe('RESTful Tester Basic', () => {
     }
   })
   posts.update(async ({req}) => {
-    return await req.query({before: 'abc'}).send({
+    const item = await req.query({before: 'abc'}).send({
       title: 'Basic',
       content: 'Basic Content',
       tags: ['c', 'd'],
       test1: 'haha'
     })
+    return item
   }, {
     use: addQuery(),
     patch: {title: 'Patched'}
   })
   posts.destroy(async ({req}) => {
-    return await req.query({before: 'abc'}).send({
+    const item = await req.query({before: 'abc'}).send({
       title: 'Basic',
       content: 'Basic Content',
       tags: ['c', 'd'],
       test1: 'haha'
     })
+    return item
   }, { use: addQuery() })
 })
 describe('RESTful Tester Setup', () => {
   const posts = restful(server, '/posts', {teardown: false})
   posts.setup(async ({create}) => {
-    return await create([{
+    const item = await create([{
       title: 'setup',
       content: 'setup content',
       tags: ['c', 'd'],
@@ -131,6 +135,7 @@ describe('RESTful Tester Setup', () => {
     }], {
       use: addQuery()
     })
+    return item
   })
   posts.use(addQuery())
   posts.crud({patch: {title: 'patched'}})
@@ -139,7 +144,7 @@ describe('RESTful Tester Setup', () => {
 describe('RESTful Tester Nested', () => {
   const comments = restful(server, ['/posts', '/comments'], {teardown: false})
   comments.setup(async ({create}) => {
-    return await create([
+    const item = await create([
       {
         title: 'abc',
         content: 'nested post',
@@ -154,6 +159,7 @@ describe('RESTful Tester Nested', () => {
     ], {
       use: addQuery()
     })
+    return item
   })
   comments.crud({patch: {title: 'patched comment'}})
 })
