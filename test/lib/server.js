@@ -1,8 +1,9 @@
 const knexConfig = require('../knex/knexfile')
-const { Koapi, middlewares, model, router } = require('../../lib')
+const DataLoader = require('dataloader')
+const { Koapi, middlewares, model, router, graphql } = require('../../lib')
 const Joi = require('joi')
 const md5 = require('blueimp-md5')
-const _ = require('lodash')
+const { get } = require('lodash')
 
 const { connection } = model.connect(knexConfig.test)
 
@@ -12,7 +13,7 @@ class Category extends model.Base {
   posts () {
     return this.belongsToMany(Post, 'category2post').withPivot(['category_id'])
   }
-  static get fields () {
+  static get validator () {
     return {
       category_name: Joi.string().required()
     }
@@ -23,7 +24,22 @@ class Comment extends model.Base {
   get tableName () { return 'comments' }
   get hasTimestamps () { return false }
   get unique () { return ['title'] }
-  static get fields () {
+  static get Type () {
+    return graphql.type(`
+      type Comment {
+        id: Int!
+        title: String
+        content: String
+      }
+    `, {
+      Comment: {
+        id: model => model.id,
+        title: model => model.get('title'),
+        content: model => model.get('content')
+      }
+    })
+  }
+  static get validator () {
     return {
       title: Joi.string().min(1).required(),
       content: Joi.string(),
@@ -34,7 +50,7 @@ class Comment extends model.Base {
 }
 
 class Post extends model.Base {
-  static get fields () {
+  static get validator () {
     return Joi.object().keys({
       title: Joi.string().required(),
       content: Joi.string().required(),
@@ -47,6 +63,36 @@ class Post extends model.Base {
       test1: Joi.string(),
       test2: Joi.string()
     }).or(['test1', 'test2'])
+  }
+  static get Type () {
+    // const CommentType = Comment.Type.type
+    return graphql.type(`
+      type Post {
+        id: Int!
+        title: String
+        content: String
+        comments: [Comment]
+      }
+      extend type Mutation {
+        removePost(id: Int!): Post
+      }
+    `, {
+      Post: {
+        id: model => model.id,
+        title: model => model.get('title'),
+        content: model => model.get('content'),
+        comments: async (model, args, { loaders: { Comments } }) => {
+          const comments = await Comments.load(model.id)
+          return comments
+        }
+      },
+      Mutation: {
+        async removePost (root, {id}) {
+          const item = await Post.findById(id)
+          return item
+        }
+      }
+    })
   }
   static formatters ({onlyChanged, always, json}) {
     return {
@@ -97,7 +143,7 @@ const {server, app} = setup(app => {
         ctx.body.haha = 'yes'
       })
       this.read(async (ctx, next) => {
-        if (_.get(ctx.request.query, 'filters.category_id')) {
+        if (get(ctx.request.query, 'filters.category_id')) {
           ctx.state.query = Post.collection().query(q => {
             return q.leftJoin('category2post', 'posts.id', 'category2post.post_id')
           })
@@ -145,6 +191,40 @@ const {server, app} = setup(app => {
   class Categories extends router.Resource {
     get model () { return Category }
   }
+  app.use(graphql.middleware('/graphql', ctx => ({
+    context: {
+      loaders: {
+        Comments: new DataLoader(postIds => Comment.collection()
+          .query(q => q.whereIn('post_id', postIds)).fetch()
+          .then(collection => postIds.map(id =>
+            collection.filter(comment => comment.get('post_id') === id))
+          )
+        )
+      }
+    },
+    schema: graphql.schema([graphql.type(`
+      type RootQuery {
+        posts: [Post]
+        post(id: Int!): Post
+      }
+      type Mutation {
+        test(id: Int!): Boolean
+      }
+      schema { query: RootQuery, mutation: Mutation }
+    `, {
+      RootQuery: {
+        async posts () {
+          const items = await Post.findAll()
+          return items
+        },
+        async post (root, {id}) {
+          const item = await Post.findById(id)
+          return item
+        }
+      },
+      Mutation: { test (root, { id }) { return false } }
+    }), Post.Type, Comment.Type])
+  })))
   app.use(middlewares.routers([Posts, Aggregate, Categories]))
 })
 module.exports = { server, app, Category, Post, Comment }
