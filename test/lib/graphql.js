@@ -126,7 +126,7 @@ const Query = new types.Object({
 const Mutation = new types.Object({
   name: 'Mutation',
   fields: _ => ({
-    test: types.boolean({
+    test: types.bool({
       args: {
         id: types.nonNull(types.Int)()
       },

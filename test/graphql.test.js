@@ -146,6 +146,7 @@ describe('GraphQL', () => {
           test(id: 110)
         }
     `})
+    console.log(response.body)
     expect(response.status).toBe(200)
     expect(response.body.data.test).toBe(true)
   })
