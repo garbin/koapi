@@ -102,7 +102,6 @@ describe('GraphQL', () => {
           }
         }
     `})
-    console.log(JSON.stringify(response.body, true, 2))
     expect(response.status).toBe(200)
     expect(response.body.data.searchByCursor.edges).toBeInstanceOf(Array)
     expect(response.body.data.searchByCursor.pageInfo.hasNextPage).toBe(true)
@@ -126,6 +125,8 @@ describe('GraphQL', () => {
     `})
     expect(response.status).toBe(200)
     expect(response.body.data.posts).toBeInstanceOf(Array)
+    console.log(response.body)
+    expect(response.body.data.posts[0].commentList).toBeInstanceOf(Array)
   })
   test('post', async () => {
     const response = await request(server).post('/graphql').send({query: `

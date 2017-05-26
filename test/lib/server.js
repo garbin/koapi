@@ -1,4 +1,3 @@
-const DataLoader = require('dataloader')
 const { Koapi, middlewares, router, graphql } = require('../../lib')
 const { get } = require('lodash')
 const { connection, Comment, Post, Category } = require('./models')
