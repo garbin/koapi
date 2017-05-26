@@ -81,16 +81,7 @@ const {server, app} = setup(app => {
     get model () { return Category }
   }
   app.use(graphql.middleware('/graphql', ctx => ({
-    context: {
-      loaders: {
-        Comments: new DataLoader(postIds => Comment.collection()
-          .query(q => q.whereIn('post_id', postIds)).fetch()
-          .then(collection => postIds.map(id =>
-            collection.filter(comment => comment.get('post_id') === id))
-          )
-        )
-      }
-    },
+    context: { loader: new graphql.Loader() },
     schema
   })))
   app.use(middlewares.routers([Posts, Aggregate, Categories]))

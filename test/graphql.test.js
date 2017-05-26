@@ -21,6 +21,35 @@ describe('GraphQL', () => {
     expect(response.status).toBe(200)
     expect(response.body.data.posts).toBeInstanceOf(Array)
   })
+  test('searchByType', async () => {
+    const response = await request(server).post('/graphql').send({query: `
+        query Query {
+          search(first: 1, type: POST) {
+            totalCount
+            edges {
+              node {
+                id
+                title
+                comments {
+                  id
+                  title
+                }
+              }
+              cursor
+            }
+            pageInfo {
+              endCursor
+              hasNextPage
+            }
+          }
+        }
+    `})
+    expect(response.status).toBe(200)
+    expect(response.body.data.search.edges).toBeInstanceOf(Array)
+    expect(response.body.data.search.pageInfo.hasNextPage).toBe(true)
+    expect(response.body.data.search.edges[0].cursor).not.toBe(null)
+    expect(response.body.data.search.edges[0].node).not.toBe(null)
+  })
   test('searchByOffset', async () => {
     const response = await request(server).post('/graphql').send({query: `
         query Query {

@@ -1,91 +1,81 @@
 const models = require('./models')
-const { default: BookshelfType } = require('graphql-bookshelf')
-const {
-  GraphQLSchema,
-  GraphQLObjectType,
-  GraphQLList,
-  GraphQLBoolean,
-  GraphQLString,
-  GraphQLInt,
-  GraphQLNonNull
-} = require('graphql')
+const { graphql: { types, model } } = require('../../lib')
 
-const base64 = {
-  encode (str) {
-    return new Buffer(`${str}`).toString('base64')
-  },
-  decode (str) {
-    return new Buffer(`${str}`, 'base64').toString('ascii')
-  }
+async function getCommentsByPostId (postIds) {
+  const comments = await models.Comment.query(q => q.whereIn('post_id', postIds)).fetchAll()
+  return comments
 }
-
-const Post = new GraphQLObjectType(BookshelfType({
+const Post = new types.Object(model({
   name: 'Post',
   fields: model => ({
-    id: model.attr({ type: new GraphQLNonNull(GraphQLInt) }),
-    title: model.attr({ type: GraphQLString }),
-    content: model.attr({ type: GraphQLString }),
+    id: model.attr({ type: new types.NonNull(types.Int) }),
+    title: model.attr({ type: types.String }),
+    content: model.attr({ type: types.String }),
     comments: {
-      type: new GraphQLList(Comment),
-      async resolve (model, args, { loaders: { Comments } }) {
-        const comments = await Comments.load(model.id)
-        return comments
+      type: new types.List(Comment),
+      async resolve (model, args, { loader }) {
+        const items = await loader.acquire('post-comments', getCommentsByPostId).load(model.id)
+        return items
       }
     }
   })
 }))
 
-const Comment = new GraphQLObjectType(BookshelfType({
+const Comment = new types.Object(model({
   name: 'Comment',
   fields: model => ({
-    id: model.attr({ type: new GraphQLNonNull(GraphQLInt) }),
-    title: model.attr({ type: GraphQLString }),
-    content: model.attr({ type: GraphQLString })
+    id: model.attr(types.nonNull(types.Int)),
+    title: model.attr(types.string()),
+    content: model.attr(types.string())
   })
 }))
-const PostsConnection = new GraphQLObjectType({
-  name: 'PostsConnection',
-  fields: _ => ({
-    totalCount: { type: GraphQLInt },
-    edges: { type: new GraphQLList(Edge) },
-    pageInfo: { type: PageInfo }
-  })
+
+const PostsConnection = types.connection.define(Post)
+const SearchType = new types.Enum({
+  name: 'SearchType',
+  values: {
+    POST: { value: models.Post }
+  }
 })
 
-const Edge = new GraphQLObjectType({
-  name: 'Edge',
-  fields: _ => ({
-    node: { type: Post },
-    cursor: { type: GraphQLString, resolve: edge => new Buffer(`${edge.cursor}`).toString('base64') }
-  })
-})
-const PageInfo = new GraphQLObjectType({
-  name: 'PageInfo',
-  fields: _ => ({
-    startCursor: { type: GraphQLString, resolve: info => base64.encode(info.startCursor) },
-    endCursor: { type: GraphQLString, resolve: info => base64.encode(info.endCursor) },
-    hasNextPage: { type: GraphQLBoolean }
-  })
-})
-
-const Query = new GraphQLObjectType({
+const Query = new types.Object({
   name: 'Query',
   fields: _ => ({
     posts: {
-      type: new GraphQLList(Post),
+      type: new types.List(Post),
       async resolve () {
         const items = await models.Post.findAll()
         return items
       }
     },
+    search: {
+      type: PostsConnection,
+      args: types.connection.args({
+        type: { type: SearchType }
+      }),
+      resolve: types.connection.resolve(async (root, { first = 10, after, type }) => {
+        const result = await type.forge().fetchPage({
+          limit: first,
+          offset: after
+        })
+        const hasNextPage = after < result.pagination.rowCount - first
+        return {
+          totalCount: result.pagination.rowCount,
+          edges: result.models.map((node, index) => ({node, cursor: after + index})),
+          pageInfo: {
+            startCursor: after,
+            endCursor: after + first,
+            hasNextPage
+          }
+        }
+      })
+    },
     searchByOffset: {
       type: PostsConnection,
-      args: {
-        first: { type: GraphQLInt },
-        after: { type: GraphQLString }
-      },
-      async resolve (root, {first = 10, after: afterString = 'MA=='}) {
-        const after = base64.decode(afterString)
+      args: types.connection.args({
+        type: { type: SearchType }
+      }),
+      resolve: types.connection.resolve(async (root, { first = 10, after }) => {
         const result = await models.Post.forge().fetchPage({
           limit: first,
           offset: after
@@ -100,16 +90,12 @@ const Query = new GraphQLObjectType({
             hasNextPage
           }
         }
-      }
+      })
     },
     searchByCursor: {
       type: PostsConnection,
-      args: {
-        first: { type: GraphQLInt },
-        after: { type: GraphQLString }
-      },
-      async resolve (root, {first = 10, after: afterString = 'MA=='}) {
-        const after = base64.decode(afterString)
+      args: types.connection.args(),
+      resolve: types.connection.resolve(async (root, {first = 10, after}) => {
         const result = await models.Post.forge().where('id', '>', after).fetchPage({ limit: first })
         const hasNextPage = !(result.models.length < first)
         return {
@@ -121,12 +107,12 @@ const Query = new GraphQLObjectType({
             hasNextPage
           }
         }
-      }
+      })
     },
     post: {
       type: Post,
       args: {
-        id: { type: new GraphQLNonNull(GraphQLInt) }
+        id: { type: new types.NonNull(types.Int) }
       },
       async resolve (root, {id}) {
         const item = await models.Post.findById(id)
@@ -136,20 +122,19 @@ const Query = new GraphQLObjectType({
   })
 })
 
-const Mutation = new GraphQLObjectType({
+const Mutation = new types.Object({
   name: 'Mutation',
   fields: _ => ({
-    test: {
-      type: GraphQLBoolean,
+    test: types.boolean({
       args: {
-        id: { type: new GraphQLNonNull(GraphQLInt) }
+        id: types.nonNull(types.Int)
       },
       resolve: root => true
-    },
+    }),
     removePost: {
       type: Post,
       args: {
-        id: { type: new GraphQLNonNull(GraphQLInt) }
+        id: types.nonNull(types.Int)
       },
       async resolve (root, { id }) {
         const item = await models.Post.findById(id)
@@ -159,7 +144,7 @@ const Mutation = new GraphQLObjectType({
   })
 })
 
-const schema = new GraphQLSchema({
+const schema = new types.Schema({
   query: Query,
   mutation: Mutation
 })
