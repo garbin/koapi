@@ -125,7 +125,6 @@ describe('GraphQL', () => {
     `})
     expect(response.status).toBe(200)
     expect(response.body.data.posts).toBeInstanceOf(Array)
-    console.log(response.body)
     expect(response.body.data.posts[0].commentList).toBeInstanceOf(Array)
   })
   test('post', async () => {

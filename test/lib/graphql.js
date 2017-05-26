@@ -11,23 +11,22 @@ function getCommentsByPostId (postIds) {
 const Post = new types.Object(model({
   name: 'Post',
   fields: model => ({
-    id: model.attr({ type: new types.NonNull(types.Int) }),
-    title: model.attr({ type: types.String }),
-    content: model.attr({ type: types.String }),
-    comments: {
-      type: new types.List(Comment),
+    id: model.attr(types.nonNull(types.Int)()),
+    title: model.attr(types.string()),
+    content: model.attr(types.string()),
+    comments: types.list(Comment)({
       async resolve (model, args, { loader }) {
         const items = await loader.acquire('Post', getCommentsByPostId).load(model.id)
         return items
       }
-    }
+    })
   })
 }))
 
 const Comment = new types.Object(model({
   name: 'Comment',
   fields: model => ({
-    id: model.attr(types.nonNull(types.Int)),
+    id: model.attr(types.nonNull(types.Int)()),
     title: model.attr(types.string()),
     content: model.attr(types.string())
   })
@@ -44,13 +43,12 @@ const SearchType = new types.Enum({
 const Query = new types.Object({
   name: 'Query',
   fields: _ => ({
-    posts: {
-      type: new types.List(Post),
+    posts: types.list(Post)({
       async resolve () {
         const items = await models.Post.findAll()
         return items
       }
-    },
+    }),
     search: {
       type: PostsConnection,
       args: types.connection.args({
@@ -115,7 +113,7 @@ const Query = new types.Object({
     post: {
       type: Post,
       args: {
-        id: { type: new types.NonNull(types.Int) }
+        id: types.nonNull(types.Int)()
       },
       async resolve (root, {id}) {
         const item = await models.Post.findById(id)
@@ -130,14 +128,14 @@ const Mutation = new types.Object({
   fields: _ => ({
     test: types.boolean({
       args: {
-        id: types.nonNull(types.Int)
+        id: types.nonNull(types.Int)()
       },
       resolve: root => true
     }),
     removePost: {
       type: Post,
       args: {
-        id: types.nonNull(types.Int)
+        id: types.nonNull(types.Int)()
       },
       async resolve (root, { id }) {
         const item = await models.Post.findById(id)

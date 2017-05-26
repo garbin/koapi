@@ -79,7 +79,7 @@ const {server, app} = setup(app => {
   class Categories extends router.Resource {
     get model () { return Category }
   }
-  app.use(graphql.middleware('/graphql', ctx => ({
+  app.use(middlewares.graphql('/graphql', ctx => ({
     context: { loader: new graphql.Loader() },
     schema
   })))
