@@ -1,5 +1,5 @@
 const models = require('./models')
-const { graphql: { types, model } } = require('../../lib')
+const { graphql: { helper, types, relay, model } } = require('../../lib')
 
 function getCommentsByPostId (postIds) {
   return models.Comment.query(q => q.whereIn('post_id', postIds))
@@ -32,7 +32,8 @@ const Comment = new types.Object(model({
   })
 }))
 
-const PostsConnection = types.connection.define(Post)
+const PostsConnection = relay.connection.create(Post)
+
 const SearchType = new types.Enum({
   name: 'SearchType',
   values: {
@@ -51,10 +52,10 @@ const Query = new types.Object({
     }),
     search: {
       type: PostsConnection,
-      args: types.connection.args({
+      args: relay.connection.args({
         type: { type: SearchType }
       }),
-      resolve: types.connection.resolve(async (root, { first = 10, after, type }) => {
+      resolve: relay.connection.resolve(async (root, { first = 10, after, type }) => {
         const result = await type.forge().fetchPage({
           limit: first,
           offset: after
@@ -73,10 +74,10 @@ const Query = new types.Object({
     },
     searchByOffset: {
       type: PostsConnection,
-      args: types.connection.args({
+      args: relay.connection.args({
         type: { type: SearchType }
       }),
-      resolve: types.connection.resolve(async (root, { first = 10, after }) => {
+      resolve: relay.connection.resolve(async (root, { first = 10, after }) => {
         const result = await models.Post.forge().fetchPage({
           limit: first,
           offset: after
@@ -95,8 +96,8 @@ const Query = new types.Object({
     },
     searchByCursor: {
       type: PostsConnection,
-      args: types.connection.args(),
-      resolve: types.connection.resolve(async (root, {first = 10, after}) => {
+      args: relay.connection.args(),
+      resolve: relay.connection.resolve(async (root, {first = 10, after}) => {
         const result = await models.Post.forge().where('id', '>', after).fetchPage({ limit: first })
         const hasNextPage = !(result.models.length < first)
         return {
@@ -131,6 +132,28 @@ const Mutation = new types.Object({
         id: types.nonNull(types.Int)()
       },
       resolve: root => true
+    }),
+    compose: types.object({
+      name: 'ComposeMutation',
+      fields: {
+        attr1: types.string(),
+        attr2: types.string()
+      }
+    })({
+      args: {
+        id: types.string()
+      },
+      resolve: helper.resolve(
+        (root, { id }, ctx, info, value = {}) => {
+          if (id) { throw new Error('Error') }
+          value.attr1 = '1'
+          return value
+        },
+        (root, { id }, ctx, info, value = {}) => {
+          value.attr2 = '2'
+          return value
+        }
+      )
     }),
     removePost: {
       type: Post,

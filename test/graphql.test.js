@@ -140,15 +140,37 @@ describe('GraphQL', () => {
     expect(response.body.data.post.id).toBe(1)
     expect(response.status).toBe(200)
   })
-  test('mutation', async () => {
+  test('mutation test', async () => {
     const response = await request(server).post('/graphql').send({query: `
         mutation {
           test(id: 110)
         }
     `})
-    console.log(response.body)
     expect(response.status).toBe(200)
     expect(response.body.data.test).toBe(true)
+  })
+  test('mutation compose', async () => {
+    const response = await request(server).post('/graphql').send({query: `
+        mutation {
+          compose {
+            attr1
+            attr2
+          }
+        }
+    `})
+    expect(response.status).toBe(200)
+    expect(response.body.data.compose.attr1).toBe('1')
+    expect(response.body.data.compose.attr2).toBe('2')
+    const error = await request(server).post('/graphql').send({query: `
+        mutation {
+          compose(id: "Haha") {
+            attr1
+            attr2
+          }
+        }
+    `})
+    expect(error.status).toBe(200)
+    expect(error.body.data.compose).toBe(null)
   })
   test('mutation remove', async () => {
     const response = await request(server).post('/graphql').send({query: `
