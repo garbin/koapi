@@ -1,5 +1,5 @@
 const models = require('./models')
-const { graphql: { helper, types, relay, model } } = require('../../lib')
+const { graphql: { helper, types, relay } } = require('../../lib')
 
 function getCommentsByPostId (postIds) {
   return models.Comment.query(q => q.whereIn('post_id', postIds))
@@ -8,7 +8,7 @@ function getCommentsByPostId (postIds) {
       comments.filter(comment => comment.get('post_id') === id))
     )
 }
-const Post = new types.Object(model({
+const Post = new types.Object(helper.model({
   name: 'Post',
   fields: model => ({
     id: model.attr(types.nonNull(types.Int)()),
@@ -23,7 +23,7 @@ const Post = new types.Object(model({
   })
 }))
 
-const Comment = new types.Object(model({
+const Comment = new types.Object(helper.model({
   name: 'Comment',
   fields: model => ({
     id: model.attr(types.nonNull(types.Int)()),
@@ -50,6 +50,12 @@ const Query = new types.Object({
         return items
       }
     }),
+    searchByHelper: helper.search({
+      POST: {
+        model: models.Post,
+        type: Post
+      }
+    }, { name: 'Helper' }),
     search: {
       type: PostsConnection,
       args: relay.connection.args({
