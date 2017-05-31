@@ -132,7 +132,7 @@ const Query = new types.Object({
 
 const Mutation = new types.Object({
   name: 'Mutation',
-  fields: _ => ({
+  fields: _ => (Object.assign({
     test: types.bool({
       args: {
         id: types.nonNull(types.Int)()
@@ -161,17 +161,22 @@ const Mutation = new types.Object({
         }
       )
     }),
-    removePost: {
-      type: Post,
-      args: {
-        id: types.nonNull(types.Int)()
-      },
-      async resolve (root, { id }) {
-        const item = await models.Post.findById(id)
-        return item
-      }
-    }
-  })
+    createPost: helper.create({
+      model: models.Post,
+      type: Post
+    }),
+    updatePost: helper.update({
+      model: models.Post,
+      type: Post
+    }),
+    destroyPost: helper.update({
+      model: models.Post,
+      type: Post
+    })
+  }, helper.mutation({
+    model: models.Comment,
+    type: Comment
+  })))
 })
 
 const schema = new types.Schema({

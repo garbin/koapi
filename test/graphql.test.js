@@ -203,18 +203,57 @@ describe('GraphQL', () => {
     expect(error.status).toBe(200)
     expect(error.body.data.compose).toBe(null)
   })
-  test('mutation remove', async () => {
-    const response = await request(server).post('/graphql').send({query: `
+  test('create comment', async () => {
+    const res = await request(server).post('/graphql').send({query: `
         mutation {
-          removePost(id: 1) {
+          createComment(attributes: { title: "comment title", content: "comment content" }) {
             id
             title
             content
           }
         }
     `})
-    expect(response.status).toBe(200)
-    expect(response.body.data.removePost.id).toBe(1)
+    expect(res.status).toBe(200)
+    expect(typeof res.body.data.createComment.id).toBe('number')
+    expect(res.body.data.createComment.title).toBe('comment title')
+  })
+  test('mutation create', async () => {
+    const res = await request(server).post('/graphql').send({query: `
+        mutation {
+          createPost(attributes: { test1: "Hehe", title: "post title", content: "post content" }) {
+            id
+            title
+            content
+          }
+        }
+    `})
+    expect(res.status).toBe(200)
+    expect(typeof res.body.data.createPost.id).toBe('number')
+    expect(res.body.data.createPost.title).toBe('post title')
+  })
+  test('mutation update', async () => {
+    const res = await request(server).post('/graphql').send({query: `
+        mutation {
+          updatePost(attributes: { title: "post title 1" }, id: "1") {
+            id
+            title
+            content
+          }
+        }
+    `})
+    expect(res.status).toBe(200)
+    expect(res.body.data.updatePost.title).toBe('post title 1')
+  })
+  test('mutation destroy', async () => {
+    const res = await request(server).post('/graphql').send({query: `
+        mutation {
+          destroyPost(id: "1") {
+            id
+          }
+        }
+    `})
+    expect(res.status).toBe(200)
+    expect(res.body.data.destroyPost.id).toBe(1)
   })
   test('combine query', async () => {
     const response = await request(server).post('/graphql').send({query: `

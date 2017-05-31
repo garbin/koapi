@@ -53,6 +53,7 @@
     "graphql": "^0.10.1",
     "graphql-bookshelf": "0.0.8",
     "graphql-server-koa": "^0.7.2",
+    "graphql-type-json": "^0.1.4",
     "http-errors": "^1.6.1",
     "isipaddress": "0.0.2",
     "jest": "^20.0.3",
