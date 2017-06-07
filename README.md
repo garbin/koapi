@@ -61,40 +61,34 @@ class Post extends model.Base {
 
 /****************** Implement Routers ******************/
 
+const comments = router.resource(Comment, {
+  collection: ctx => ctx.state.parents.post.comments()
+  setup (route) {
+    // method "crud" is a shortcut for "create", "read", "update" and "destroy"
+    // YOU CAN ALSO USE MIDDLEWARE in "create", "read", "update", "destroy"    
+    route.create(async(ctx, next) => {
+      // you can do anything before create
+      await next();
+      // you can do anything after create
+    })
+    route.read(/* You can place any middleware here if you need */{
+      filterable: ['created_at'], // filterable fields
+      sortable: ['created_at'], // sortable fields
+    });        
+    route.destroy()
+  }
+})
+
 // POST /posts
 // GET  /posts
 // GET  /posts/:id
 // PATCH /posts/:id
 // DELETE /posts/:id
-class Posts extends router.Resource {
-  get model () { return Post }
-  setup () {
-    this.crud().children(Comments)
-  }
-}
-
-class Comments extends router.Resource {
-  get model () { return Comment }
-  collection (ctx) { return ctx.state.parents.post.comments() }
-  setup () {
-    // method "crud" is a shortcut for "create", "read", "update" and "destroy"
-    // YOU CAN ALSO USE MIDDLEWARE in "create", "read", "update", "destroy"    
-    this.create(async(ctx, next) => {
-      // you can do anything before create
-      await next();
-      // you can do anything after create
-    });
-    this.read(/* You can place any middleware here if you need */{
-      filterable: ['created_at'], // filterable fields
-      sortable: ['created_at'], // sortable fields
-    });        
-    this.destroy();
-  }
-}
+const posts = router.resource(Post, route => route.crud()).children(comments)
 
 /****************** Run server ******************/
 app.use(middlewares.preset('restful'))
-app.use(middlewares.routers([ Posts ]))
+app.use(middlewares.routers([ posts ]))
 
 app.listen(3000);
 ```
@@ -107,7 +101,7 @@ node ./app
 You have done your RESTful APIs in ONE minute
 
 ## Your API is far more complicated than this?
-Checkout [Koapp](https://github.com/koapi/koapp) for your situation.
+Checkout [Koapp](https://github.com/garbin/koapp) for your situation.
 
 ## License
 [MIT](http://opensource.org/licenses/MIT)
