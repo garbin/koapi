@@ -29,7 +29,9 @@ const Post = new types.Object({
         const items = await loader.acquire('Post', getCommentsByPostId).load(model.id)
         return items
       }
-    })
+    }),
+    created_at: types.datetime(),
+    updated_at: types.datetime()
   })
 })
 
