@@ -8,12 +8,22 @@ function getCommentsByPostId (postIds) {
       comments.filter(comment => comment.get('post_id') === id))
     )
 }
-const Post = new types.Object(helper.model({
+
+const Comment = new types.Object({
+  name: 'Comment',
+  fields: types.model({
+    id: types.nonNull(types.Int)(),
+    title: types.string(),
+    content: types.string()
+  })
+})
+
+const Post = new types.Object({
   name: 'Post',
-  fields: model => ({
-    id: model.attr(types.nonNull(types.Int)()),
-    title: model.attr(types.string()),
-    content: model.attr(types.string()),
+  fields: types.model({
+    id: types.nonNull(types.Int)(),
+    title: types.string(),
+    content: types.string(),
     comments: types.list(Comment)({
       async resolve (model, args, { loader }) {
         const items = await loader.acquire('Post', getCommentsByPostId).load(model.id)
@@ -21,16 +31,7 @@ const Post = new types.Object(helper.model({
       }
     })
   })
-}))
-
-const Comment = new types.Object(helper.model({
-  name: 'Comment',
-  fields: model => ({
-    id: model.attr(types.nonNull(types.Int)()),
-    title: model.attr(types.string()),
-    content: model.attr(types.string())
-  })
-}))
+})
 
 const PostsConnection = relay.connection.create(Post)
 
