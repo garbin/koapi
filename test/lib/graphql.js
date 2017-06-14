@@ -1,14 +1,6 @@
 const models = require('./models')
 const { graphql: { helper, types, relay } } = require('../../lib')
 
-function getCommentsByPostId (postIds) {
-  return models.Comment.query(q => q.whereIn('post_id', postIds))
-    .fetchAll()
-    .then(comments => postIds.map(id =>
-      comments.filter(comment => comment.get('post_id') === id))
-    )
-}
-
 const Comment = new types.Object({
   name: 'Comment',
   fields: types.model({
@@ -25,10 +17,7 @@ const Post = new types.Object({
     title: types.string(),
     content: types.string(),
     comments: types.list(Comment)({
-      async resolve (model, args, { loader }) {
-        const items = await loader.acquire('Post', getCommentsByPostId).load(model.id)
-        return items
-      }
+      resolve: helper.batchLoad({ model: models.Comment })
     }),
     created_at: types.datetime(),
     updated_at: types.datetime()
