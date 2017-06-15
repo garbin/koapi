@@ -234,7 +234,7 @@ describe('GraphQL', () => {
   test('mutation update', async () => {
     const res = await request(server).post('/graphql').send({query: `
         mutation {
-          updatePost(attributes: { title: "post title 1" }, id: "1") {
+          updatePost(attributes: { title: "post title 1" }, id: 1) {
             id
             title
             content
@@ -247,13 +247,11 @@ describe('GraphQL', () => {
   test('mutation destroy', async () => {
     const res = await request(server).post('/graphql').send({query: `
         mutation {
-          destroyPost(id: "1") {
-            id
-          }
+          destroyPost(id: 2)
         }
     `})
     expect(res.status).toBe(200)
-    expect(res.body.data.destroyPost.id).toBe(1)
+    expect(res.body.data.destroyPost).toBe(true)
   })
   test('combine query', async () => {
     const response = await request(server).post('/graphql').send({query: `

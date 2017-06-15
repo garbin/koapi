@@ -161,7 +161,7 @@ const Mutation = new types.Object({
       model: models.Post,
       type: Post
     }),
-    destroyPost: helper.update({
+    destroyPost: helper.destroy({
       model: models.Post,
       type: Post
     })
