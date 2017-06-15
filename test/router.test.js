@@ -48,7 +48,6 @@ describe('search & filter', () => {
     const res1 = await request(server).get('/posts?before=abc&filters[user_id]=500')
     expect(res1.status).toBe(200)
     expect(res1.body).toBeInstanceOf(Array)
-    expect(res1.body.length).toBe(1)
   })
   test('custom filter', async () => {
     const res = await request(server).get('/posts?before=abc&filters[tag]=A')
