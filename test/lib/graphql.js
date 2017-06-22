@@ -72,25 +72,19 @@ const Query = new types.Object({
     },
     searchByOffset: {
       type: PostsConnection,
-      args: relay.connection.args({
-        type: { type: SearchType }
-      }),
-      resolve: relay.connection.resolve(async (root, { first = 10, after }) => {
-        const result = await models.Post.forge().fetchPage({
-          limit: first,
-          offset: after
-        })
-        const hasNextPage = after < result.pagination.rowCount - first
-        return {
-          totalCount: result.pagination.rowCount,
-          edges: result.models.map((node, index) => ({node, cursor: after + index})),
-          pageInfo: {
-            startCursor: after,
-            endCursor: after + first,
-            hasNextPage
+      args: relay.connection.args(helper.connection.args()),
+      resolve: relay.connection.resolve(helper.connection.resolve({
+        collection: ctx => models.Post.collection(),
+        searchable: ['title'],
+        filterable: ({filter, query, filterBy}) => {
+          filter('user_id')
+          filter('category_id')
+          if (filterBy.tag) {
+            query.whereRaw('tags::jsonb @> ?', `"${filterBy.tag}"`)
           }
-        }
-      })
+        },
+        sortable: ['created_at']
+      }))
     },
     searchByCursor: {
       type: PostsConnection,

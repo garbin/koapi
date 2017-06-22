@@ -109,6 +109,32 @@ describe('GraphQL', () => {
     expect(response.body.data.searchByOffset.pageInfo.hasNextPage).toBe(true)
     expect(response.body.data.searchByOffset.edges[0].cursor).not.toBe(null)
     expect(response.body.data.searchByOffset.edges[0].node).not.toBe(null)
+    const searchNone = await request(server).post('/graphql').send({query: `
+        query Query {
+          searchByOffset(keyword: "Notexists") {
+            totalCount
+            edges {
+              node {
+                id
+                title
+                comments {
+                  id
+                  title
+                }
+              }
+              cursor
+            }
+            pageInfo {
+              endCursor
+              hasNextPage
+            }
+          }
+        }
+    `})
+    expect(searchNone.status).toBe(200)
+    expect(searchNone.body.data.searchByOffset.edges).toBeInstanceOf(Array)
+    expect(searchNone.body.data.searchByOffset.edges.length).toBe(0)
+    expect(searchNone.body.data.searchByOffset.totalCount).toBe(0)
   })
   test('searchByCursor', async () => {
     const response = await request(server).post('/graphql').send({query: `
