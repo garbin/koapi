@@ -1,7 +1,7 @@
 const { server } = require('./lib/server')
-const { request, graphql } = require('../lib/test')
+const { graphql } = require('../lib/test')
 const Promise = require('bluebird')
-const { describe, test, afterAll, expect } = global
+const { describe, afterAll, expect } = global
 
 const graphqlRequest = {
   server,
