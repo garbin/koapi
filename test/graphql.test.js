@@ -27,7 +27,7 @@ describe('GraphQL', () => {
   graphql.query('searchByType', graphqlRequest, `
     query Query {
       search(first: 1, type: POST) {
-        totalCount
+        total
         edges {
           node {
             id
@@ -54,7 +54,7 @@ describe('GraphQL', () => {
   graphql.query('searchByHelper', graphqlRequest, `
     query Query {
       searchByHelper(first: 1, type: POST) {
-        totalCount
+        total
         edges {
           node {
             ... on Post {
@@ -74,7 +74,9 @@ describe('GraphQL', () => {
         }
       }
     }
-  `, ({data}) => {
+  `, ({data, errors}) => {
+    expect(errors).toBe(undefined)
+    expect(data).not.toBe(null)
     expect(data.searchByHelper.edges).toBeInstanceOf(Array)
     expect(data.searchByHelper.pageInfo.hasNextPage).toBe(true)
     expect(data.searchByHelper.edges[0].cursor).not.toBe(null)
@@ -83,7 +85,7 @@ describe('GraphQL', () => {
   graphql.query('searchByOffset', graphqlRequest, `
     query Query {
       searchByOffset(first: 1) {
-        totalCount
+        total
         edges {
           node {
             id
@@ -110,7 +112,7 @@ describe('GraphQL', () => {
   graphql.query('searchByOffset None', graphqlRequest, `
     query Query {
       searchByOffset(keyword: "Notexists") {
-        totalCount
+        total
         edges {
           node {
             id
@@ -131,12 +133,12 @@ describe('GraphQL', () => {
   `, ({data}) => {
     expect(data.searchByOffset.edges).toBeInstanceOf(Array)
     expect(data.searchByOffset.edges.length).toBe(0)
-    expect(data.searchByOffset.totalCount).toBe(0)
+    expect(data.searchByOffset.total).toBe(0)
   })
   graphql.query('searchByCursor', graphqlRequest, `
     query Query {
       searchByCursor(first: 1) {
-        totalCount
+        total
         edges {
           node {
             id
@@ -154,7 +156,9 @@ describe('GraphQL', () => {
         }
       }
     }
-  `, ({data}) => {
+  `, ({data, errors}) => {
+    console.log(data)
+    expect(errors).toBe(undefined)
     expect(data.searchByCursor.edges).toBeInstanceOf(Array)
     expect(data.searchByCursor.pageInfo.hasNextPage).toBe(true)
     expect(data.searchByCursor.edges[0].cursor).not.toBe(null)

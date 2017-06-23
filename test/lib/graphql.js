@@ -59,16 +59,11 @@ const Query = new types.Object({
           limit: first,
           offset: after
         })
-        const hasNextPage = after < result.pagination.rowCount - first
-        return {
-          totalCount: result.pagination.rowCount,
-          edges: result.models.map((node, index) => ({node, cursor: after + index})),
-          pageInfo: {
-            startCursor: after,
-            endCursor: after + first,
-            hasNextPage
-          }
-        }
+        return relay.connection.result(result.models, {
+          total: result.pagination.rowCount,
+          after,
+          first
+        })
       })
     },
     searchByOffset: {
@@ -92,16 +87,16 @@ const Query = new types.Object({
       args: relay.connection.args(),
       resolve: relay.connection.resolve(async (root, {first = 10, after}) => {
         const result = await models.Post.forge().where('id', '>', after).fetchPage({ limit: first })
-        const hasNextPage = !(result.models.length < first)
-        return {
-          totalCount: result.pagination.rowCount,
-          edges: result.models.map((node, index) => ({node, cursor: node.id})),
-          pageInfo: {
-            startCursor: models.Post.collection(result.models).first().id,
-            endCursor: models.Post.collection(result.models).last().id,
-            hasNextPage
-          }
-        }
+        return relay.connection.result(result.models, {
+          total: result.pagination.rowCount,
+          first,
+          after
+        }, {
+          node: ({node}) => node.id,
+          start: ({nodes}) => models.Post.collection(nodes).first().id,
+          end: ({nodes}) => models.Post.collection(nodes).last().id,
+          hasNext: ({nodes, first}) => !(result.models.length < first)
+        })
       })
     },
     post: {
