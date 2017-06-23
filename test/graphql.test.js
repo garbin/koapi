@@ -222,25 +222,34 @@ describe('GraphQL', () => {
       attributes: { title: 'comment title', content: 'comment content' }
     }
   })
-  graphql.create('create post', graphqlRequest, {
+  // graphql.create('create post', graphqlRequest, {
+  //   name: 'Post',
+  //   variables: {
+  //     attributes: { test1: 'Hehe', title: 'post title', content: 'post content' }
+  //   }
+  // })
+  graphql.mutation('Mutation', graphqlRequest, {
     name: 'Post',
     variables: {
       attributes: { test1: 'Hehe', title: 'post title', content: 'post content' }
+    },
+    update: {
+      attributes: { title: 'edited' }
     }
   })
-  graphql.update('update post', graphqlRequest, {
-    name: 'Post',
-    variables: {
-      attributes: { title: 'post title 1' },
-      id: 1
-    }
-  })
-  graphql.destroy('destroy post', graphqlRequest, {
-    name: 'Post',
-    variables: {
-      id: 2
-    }
-  })
+  // graphql.update('update post', graphqlRequest, {
+  //   name: 'Post',
+  //   variables: {
+  //     attributes: { title: 'post title 1' },
+  //     id: 1
+  //   }
+  // })
+  // graphql.destroy('destroy post', graphqlRequest, {
+  //   name: 'Post',
+  //   variables: {
+  //     id: 2
+  //   }
+  // })
   graphql.query('combine query', graphqlRequest, `
     query Query {
       posts {
