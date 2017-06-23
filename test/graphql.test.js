@@ -157,7 +157,6 @@ describe('GraphQL', () => {
       }
     }
   `, ({data, errors}) => {
-    console.log(data)
     expect(errors).toBe(undefined)
     expect(data.searchByCursor.edges).toBeInstanceOf(Array)
     expect(data.searchByCursor.pageInfo.hasNextPage).toBe(true)
