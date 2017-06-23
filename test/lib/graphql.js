@@ -19,6 +19,7 @@ const Post = new types.Object({
     comments: types.list(Comment)({
       resolve: helper.batchLoad({ model: models.Comment })
     }),
+    test1: types.string(),
     created_at: types.datetime(),
     updated_at: types.datetime()
   })
