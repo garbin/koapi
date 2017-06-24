@@ -1,6 +1,6 @@
 {
   "name": "koapi",
-  "version": "0.10.25",
+  "version": "0.10.26",
   "description": "RESTful API framework based on koajs",
   "main": "lib/index.js",
   "bin": {
@@ -53,6 +53,7 @@
     "graphql": "^0.10.3",
     "graphql-iso-date": "^3.2.0",
     "graphql-parse-fields": "^1.2.0",
+    "graphql-relay": "^0.5.2",
     "graphql-request": "^1.2.0",
     "graphql-server-koa": "^0.8.5",
     "graphql-type-json": "^0.1.4",

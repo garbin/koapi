@@ -210,61 +210,31 @@ describe('GraphQL', () => {
   `, ({data}) => {
     expect(data.test).toBe(true)
   })
-  graphql.query('mutation compose', graphqlRequest, `
-    mutation {
-      compose {
-        attr1
-        attr2
-      }
-    }
-  `, ({data}) => {
-    expect(data.compose.attr1).toBe('1')
-    expect(data.compose.attr2).toBe('2')
-  })
-  graphql.query('mutation with args', graphqlRequest, `
-    mutation {
-      compose(id: "Haha") {
-        attr1
-        attr2
-      }
-    }
-  `, ({data}) => {
-    expect(data.compose).toBe(null)
-  })
-  graphql.create('create comment', graphqlRequest, {
-    name: 'Comment',
-    variables: {
-      attributes: { title: 'comment title', content: 'comment content' }
-    }
-  })
-  // graphql.create('create post', graphqlRequest, {
-  //   name: 'Post',
-  //   variables: {
-  //     attributes: { test1: 'Hehe', title: 'post title', content: 'post content' }
-  //   }
-  // })
-  graphql.mutation('Mutation', graphqlRequest, {
+  graphql.create('Post', graphqlRequest, {
     name: 'Post',
     variables: {
-      attributes: { test1: 'Hehe', title: 'post title', content: 'post content' }
-    },
-    update: {
-      attributes: { title: 'edited' }
+      input: {
+        test1: 'Hehe',
+        title: 'post title',
+        content: 'post content'
+      }
     }
   })
-  // graphql.update('update post', graphqlRequest, {
-  //   name: 'Post',
-  //   variables: {
-  //     attributes: { title: 'post title 1' },
-  //     id: 1
-  //   }
-  // })
-  // graphql.destroy('destroy post', graphqlRequest, {
-  //   name: 'Post',
-  //   variables: {
-  //     id: 2
-  //   }
-  // })
+  graphql.mutation('Comment', graphqlRequest, {
+    name: 'Comment',
+    inputType: 'JSON',
+    variables: {
+      input: {
+        title: 'post title',
+        content: 'post content'
+      }
+    },
+    update: {
+      input: {
+        title: 'edited'
+      }
+    }
+  })
   graphql.query('combine query', graphqlRequest, `
     query Query {
       posts {

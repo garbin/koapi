@@ -1,10 +1,10 @@
 const models = require('./models')
-const { graphql: { helper, types, relay } } = require('../../lib')
+const { graphql: { presets, types, relay } } = require('../../lib')
 
 const Comment = new types.Object({
   name: 'Comment',
-  fields: types.model({
-    id: types.nonNull(types.ID)(),
+  fields: presets.model({
+    id: types.nonNull(types.ID),
     title: types.string(),
     content: types.string()
   })
@@ -12,12 +12,12 @@ const Comment = new types.Object({
 
 const Post = new types.Object({
   name: 'Post',
-  fields: types.model({
-    id: types.nonNull(types.ID)(),
+  fields: presets.model({
+    id: types.nonNull(types.ID),
     title: types.string(),
     content: types.string(),
-    comments: types.list(Comment)({
-      resolve: helper.batchLoad({ model: models.Comment })
+    comments: types.list(Comment, {
+      resolve: presets.batch.list({ model: models.Comment })
     }),
     test1: types.string(),
     created_at: types.datetime(),
@@ -37,19 +37,19 @@ const SearchType = new types.Enum({
 const Query = new types.Object({
   name: 'Query',
   fields: _ => ({
-    posts: types.list(Post)({
+    posts: types.list(Post, {
       async resolve () {
         const items = await models.Post.findAll()
         return items
       }
     }),
-    fetch: helper.fetch({
+    fetch: presets.fetch({
       POST: {
         model: models.Post,
         type: Post
       }
     }),
-    searchByHelper: helper.search({
+    searchByHelper: presets.search({
       POST: {
         model: models.Post,
         type: Post
@@ -74,8 +74,8 @@ const Query = new types.Object({
     },
     searchByOffset: {
       type: PostsConnection,
-      args: relay.connection.args(helper.connection.args()),
-      resolve: relay.connection.resolve(helper.connection.resolve({
+      args: relay.connection.args(presets.connection.args()),
+      resolve: relay.connection.resolve(presets.connection.resolve({
         collection: ctx => models.Post.collection(),
         searchable: ['title'],
         filterable: ({filter, query, filterBy}) => {
@@ -108,7 +108,7 @@ const Query = new types.Object({
     post: {
       type: Post,
       args: {
-        id: types.nonNull(types.Int)()
+        id: types.nonNull(types.Int)
       },
       async resolve (root, {id}) {
         const item = await models.Post.findById(id)
@@ -120,51 +120,34 @@ const Query = new types.Object({
 
 const Mutation = new types.Object({
   name: 'Mutation',
-  fields: _ => (Object.assign({
+  fields: Object.assign({
     test: types.bool({
       args: {
-        id: types.nonNull(types.Int)()
+        id: types.nonNull(types.Int)
       },
       resolve: root => true
     }),
-    compose: types.object({
-      name: 'ComposeMutation',
+    createPost: presets.mutation.create({
+      model: models.Post,
+      type: Post,
       fields: {
-        attr1: types.string(),
-        attr2: types.string()
+        title: types.string(),
+        content: types.string(),
+        test1: types.string(),
+        test2: types.string()
       }
-    })({
-      args: {
-        id: types.string()
-      },
-      resolve: helper.resolve(
-        (root, { id }, ctx, info, value = {}) => {
-          if (id) { throw new Error('Error') }
-          value.attr1 = '1'
-          return value
-        },
-        (root, { id }, ctx, info, value = {}) => {
-          value.attr2 = '2'
-          return value
-        }
-      )
     }),
-    createPost: helper.create({
+    updatePost: presets.mutation.update({
       model: models.Post,
       type: Post
     }),
-    updatePost: helper.update({
-      model: models.Post,
-      type: Post
-    }),
-    destroyPost: helper.destroy({
+    removePost: presets.mutation.remove({
       model: models.Post,
       type: Post
     })
-  }, helper.mutation({
-    model: models.Comment,
-    type: Comment
-  })))
+  }, presets.mutation.cud(Comment, {
+    model: models.Comment
+  }))
 })
 
 const schema = new types.Schema({
