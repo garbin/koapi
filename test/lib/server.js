@@ -72,7 +72,11 @@ const {server, app} = setup(app => {
   const categories = router.resource(Category)
   app.use(middlewares.graphql('/graphql', ctx => ({
     context: { loader: new graphql.Loader() },
-    schema
+    schema,
+    formatErros: e => {
+      console.error(e)
+      return e
+    }
   })))
   app.use(middlewares.routers([posts, aggregate, categories]))
 })

@@ -76,7 +76,7 @@ const Query = new types.Object({
       type: PostsConnection,
       args: relay.connection.args(presets.connection.args()),
       resolve: relay.connection.resolve(presets.connection.resolve({
-        collection: ctx => models.Post.collection(),
+        model: models.Post,
         searchable: ['title'],
         filterable: ({filter, query, filterBy}) => {
           filter('user_id')
@@ -145,7 +145,7 @@ const Mutation = new types.Object({
       model: models.Post,
       type: Post
     })
-  }, presets.mutation.cud(Comment, {
+  }, presets.mutation.cur(Comment, {
     model: models.Comment
   }))
 })
