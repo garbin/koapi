@@ -24,6 +24,18 @@ describe('GraphQL', () => {
   `, ({data}, res) => {
     expect(data.posts).toBeInstanceOf(Array)
   })
+  graphql.query('fetch', graphqlRequest, `
+    query Query {
+      fetch(id: 1, type: POST) {
+        ... on Post {
+          id
+        }
+      }
+    }
+  `, ({data, errors}, res) => {
+    expect(errors).toBe(undefined)
+    expect(data.fetch.id).toBe('1')
+  })
   graphql.query('searchByType', graphqlRequest, `
     query Query {
       search(first: 1, type: POST) {
@@ -189,7 +201,7 @@ describe('GraphQL', () => {
       }
     }
   `, ({data}) => {
-    expect(data.post.id).toBe(1)
+    expect(data.post.id).toBe('1')
   })
   graphql.query('mutation test', graphqlRequest, `
     mutation {
@@ -268,6 +280,6 @@ describe('GraphQL', () => {
     }
   `, ({data}) => {
     expect(data.posts).toBeInstanceOf(Array)
-    expect(data.post.id).toBe(1)
+    expect(data.post.id).toBe('1')
   })
 })

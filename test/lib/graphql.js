@@ -4,7 +4,7 @@ const { graphql: { helper, types, relay } } = require('../../lib')
 const Comment = new types.Object({
   name: 'Comment',
   fields: types.model({
-    id: types.nonNull(types.Int)(),
+    id: types.nonNull(types.ID)(),
     title: types.string(),
     content: types.string()
   })
@@ -13,7 +13,7 @@ const Comment = new types.Object({
 const Post = new types.Object({
   name: 'Post',
   fields: types.model({
-    id: types.nonNull(types.Int)(),
+    id: types.nonNull(types.ID)(),
     title: types.string(),
     content: types.string(),
     comments: types.list(Comment)({
@@ -41,6 +41,12 @@ const Query = new types.Object({
       async resolve () {
         const items = await models.Post.findAll()
         return items
+      }
+    }),
+    fetch: helper.fetch({
+      POST: {
+        model: models.Post,
+        type: Post
       }
     }),
     searchByHelper: helper.search({
