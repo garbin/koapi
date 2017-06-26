@@ -207,6 +207,7 @@ describe('GraphQL#Query', () => {
         expect(errors).toBe(undefined)
         expect(data.posts).toBeInstanceOf(Array)
         expect(data.posts[0].commentList).toBeInstanceOf(Array)
+        expect(data.posts[0].commentList[0]).not.toBe(undefined)
       })
   })
   test(`query post`, async () => {
