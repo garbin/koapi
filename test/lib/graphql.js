@@ -17,7 +17,7 @@ const Post = new types.Object({
     title: types.string(),
     content: types.string(),
     comments: types.list(Comment, {
-      resolve: presets.batch.hasMany({ model: models.Comment })
+      resolve: presets.batch.hasMany(models.Comment)
     }),
     test1: types.string(),
     created_at: types.datetime(),
