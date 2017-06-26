@@ -127,9 +127,8 @@ const Mutation = new types.Object({
       },
       resolve: root => true
     }),
-    createPost: presets.mutation.create({
+    createPost: presets.mutation.create(Post, {
       model: models.Post,
-      type: Post,
       fields: {
         title: types.string(),
         content: types.string(),
@@ -137,13 +136,11 @@ const Mutation = new types.Object({
         test2: types.string()
       }
     }),
-    updatePost: presets.mutation.update({
-      model: models.Post,
-      type: Post
+    updatePost: presets.mutation.update(Post, {
+      model: models.Post
     }),
-    removePost: presets.mutation.remove({
-      model: models.Post,
-      type: Post
+    removePost: presets.mutation.remove(Post, {
+      model: models.Post
     })
   }, presets.mutation.cur(Comment, {
     model: models.Comment
