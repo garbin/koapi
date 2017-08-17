@@ -142,7 +142,7 @@ const Mutation = new types.Object({
     removePost: presets.mutation.remove(Post, {
       model: models.Post
     })
-  }, presets.mutation.cur(Comment, {
+  }, presets.mutation(Comment, {
     model: models.Comment
   }))
 })
