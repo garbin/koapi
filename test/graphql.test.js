@@ -237,7 +237,7 @@ describe('GraphQL#Mutation', () => {
       })
   })
   test('mutation Post cur', async () => {
-    await graphql.presets.cur(request, {
+    await graphql.presets.mutation(request, {
       type: 'Post',
       create: {
         inputType: 'PostInput',
