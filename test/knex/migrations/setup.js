@@ -5,6 +5,7 @@ exports.up = function (knex, Promise) {
     table.string('title')
     table.text('content')
     table.string('slug').unique()
+    table.string('uuid').unique()
     table.string('password')
     table.integer('user_id')
     table.jsonb('tags')
@@ -28,9 +29,12 @@ exports.up = function (knex, Promise) {
   }).createTable('category2post', function (table) {
     table.integer('category_id')
     table.integer('post_id')
+  }).createTable('tests', function (table) {
+    table.string('id').primary()
+    table.string('title')
   })
 }
 
 exports.down = function (knex, Promise) {
-  return knex.schema.dropTable('posts').dropTable('comments').dropTable('categories').dropTable('category2post')
+  return knex.schema.dropTable('posts').dropTable('comments').dropTable('categories').dropTable('category2post').dropTable('tests')
 }

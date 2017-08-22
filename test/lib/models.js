@@ -1,10 +1,18 @@
 const knexConfig = require('../knex/knexfile')
 const { model } = require('../../lib')
 const Joi = require('joi')
+const uuid = require('uuid')
 const md5 = require('blueimp-md5')
 
 const { connection } = model.connect(knexConfig.test)
 
+class Test extends model.Base {
+  get tableName () { return 'tests' }
+  get hasTimestamps () { return false }
+  static formatters ({onlyChanged, defaultTo, onlyNew, always, json}) {
+    return { id: onlyNew(uuid) }
+  }
+}
 class Category extends model.Base {
   get tableName () { return 'categories' }
   get hasTimestamps () { return false }
@@ -38,6 +46,7 @@ class Post extends model.Base {
       title: Joi.string().required(),
       content: Joi.string().required(),
       slug: Joi.string(),
+      uuid: Joi.string(),
       password: Joi.string(),
       user_id: Joi.number(),
       tags: Joi.array(),
@@ -47,9 +56,10 @@ class Post extends model.Base {
       test2: Joi.string()
     }).or(['test1', 'test2'])
   }
-  static formatters ({onlyChanged, always, json}) {
+  static formatters ({onlyChanged, defaultTo, onlyNew, always, json}) {
     return {
       password: onlyChanged(md5),
+      uuid: onlyNew(uuid),
       tags: json(),
       object: json(),
       array: json()
@@ -71,5 +81,6 @@ module.exports = {
   connection,
   Comment,
   Post,
+  Test,
   Category
 }

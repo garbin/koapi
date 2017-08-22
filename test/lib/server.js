@@ -1,6 +1,6 @@
 const { Koapi, middlewares, router, graphql } = require('../../lib')
 const { get } = require('lodash')
-const { connection, Comment, Post, Category } = require('./models')
+const { connection, Comment, Post, Category, Test } = require('./models')
 const { schema } = require('./graphql')
 
 const setup = (config) => {
@@ -80,4 +80,4 @@ const {server, app} = setup(app => {
   })))
   app.use(middlewares.routers([posts, aggregate, categories]))
 })
-module.exports = { server, app, Category, Post, Comment }
+module.exports = { server, app, Category, Post, Comment, Test }

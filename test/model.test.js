@@ -1,4 +1,4 @@
-const { Post, server } = require('./lib/server')
+const { Test, Post, server } = require('./lib/server')
 const { describe, it, expect } = global
 const { afterAll, fail } = global
 const _ = require('lodash')
@@ -59,11 +59,24 @@ describe('model', function () {
     const hashed = '900150983cd24fb0d6963f7d28e17f72'
     const tmp0 = await Post.forge().save(data)
     expect(tmp0.get('password')).toBe('abc')
+    expect(tmp0.get('id')).not.toBeNull()
+    expect(tmp0.get('uuid')).toBeUndefined()
     await tmp0.refresh()
     expect(tmp0.get('password')).toBe(hashed)
+    expect(tmp0.get('uuid')).not.toBeUndefined()
     await tmp0.save({title: 'b'})
     expect(tmp0.get('title')).toBe('b')
     expect(tmp0.get('password')).toBe(hashed)
+  })
+  it('onlyNew', async () => {
+    const data = {
+      title: '123'
+    }
+    const tmp0 = await Test.forge().save(data)
+    const id = tmp0.id
+    expect(tmp0.id).not.toBeUndefined()
+    await tmp0.save({title: '321'})
+    expect(tmp0.id).toBe(id)
   })
   it('object', async () => {
     const object = {
