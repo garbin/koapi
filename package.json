@@ -1,6 +1,6 @@
 {
   "name": "koapi",
-  "version": "0.10.48",
+  "version": "0.10.49",
   "description": "RESTful API framework based on koajs",
   "main": "lib/index.js",
   "bin": {
@@ -42,7 +42,7 @@
   },
   "homepage": "https://github.com/garbin/koapi#readme",
   "dependencies": {
-    "apollo-server-koa": "^1.1.0",
+    "apollo-server-koa": "^1.1.2",
     "bookshelf": "^0.10.4",
     "bookshelf-cascade-delete": "^2.0.0",
     "bookshelf-json-columns": "^2.1.1",
@@ -83,7 +83,7 @@
     "lodash": "^4.16.6",
     "moment": "^2.18.1",
     "mysql": "^2.14.1",
-    "pluralize": "^6.0.0",
+    "pluralize": "^7.0.0",
     "supertest": "^3.0.0",
     "tldjs": "^2.0.0",
     "ulid": "^0.2.0",
@@ -95,6 +95,6 @@
     "blueimp-md5": "^2.8.0",
     "graphql-tag": "^2.4.2",
     "nodemon": "^1.9.1",
-    "pg": "^7.1.2"
+    "pg": "^7.2.0"
   }
 }
