@@ -52,10 +52,10 @@
     "bookshelf-uuid": "^1.0.0",
     "dataloader": "^1.3.0",
     "graphql": "^0.11.7",
-    "graphql-iso-date": "^3.3.0",
     "graphql-parse-fields": "^1.2.0",
     "graphql-relay": "^0.5.3",
     "graphql-request": "^1.4.0",
+    "graphql-iso-date": "^3.3.0",
     "graphql-type-json": "^0.1.4",
     "http-errors": "^1.6.2",
     "isipaddress": "0.0.2",
@@ -91,6 +91,10 @@
     "winston": "^2.4.0",
     "yargs": "^9.0.1"
   },
+  "bundledDependencies": [
+    "graphql-iso-date",
+    "graphql-type-json"
+  ],
   "devDependencies": {
     "blueimp-md5": "^2.10.0",
     "graphql-tag": "^2.5.0",
