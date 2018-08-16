@@ -1,18 +1,12 @@
-import winston from 'winston'
+import winston, { format } from 'winston'
 import moment from 'moment'
 
-const logger = new (winston.Logger)({
+const logger = winston.createLogger({
+  format: format.combine(format.timestamp(), format.prettyPrint()),
   transports: [
-    new (winston.transports.Console)({
-      timestamp() {
-        return moment().format();
-      },
-      formatter(options){
-        return `${options.timestamp()} [${options.level.toUpperCase()}] ${options.message !== undefined ? options.message : ''} ${options.meta && Object.keys(options.meta).length ? '\n\t'+ JSON.stringify(options.meta) : '' }`
-      }
-    })
+    new winston.transports.Console()
   ]
-});
+})
 
-export {winston};
-export default logger;
+export {winston}
+export default logger

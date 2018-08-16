@@ -2,7 +2,7 @@ import Router from 'koa-router'
 import compose from 'koa-compose'
 import Model from './model'
 import Collection from 'bookshelf/lib/collection'
-import paginate from 'koa-pagination'
+import { middleware as paginate } from 'koa-pagination'
 import convert from 'koa-convert'
 import joi_to_json_schema from 'joi-to-json-schema'
 import jsf from 'json-schema-faker'
@@ -185,7 +185,7 @@ export class ResourceRouter extends Router {
     this.methods.read = true;
     // read list
     this.get(pattern.root,
-             convert(paginate(options.pagination)),
+             paginate(options.pagination),
              compose(middlewares),
              async (ctx) => {
                let query = ctx.state.query || collection(ctx).model.forge();
