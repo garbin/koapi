@@ -78,14 +78,14 @@ const { server, app } = setup(app => {
     })
   })
   const categories = router.resource(Category)
-  middlewares.graphql(app, ctx => ({
-    context: { loader: new graphql.Loader() },
+  middlewares.graphql(app, {
     schema,
+    context: { loader: new graphql.Loader() },
     formatErros: e => {
       console.error(e)
       return e
     }
-  }))
+  })
   app.use(middlewares.routers([posts, aggregate, categories]))
 })
 module.exports = { server, app, Category, Post, Comment, Test }

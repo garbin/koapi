@@ -42,7 +42,7 @@
   },
   "homepage": "https://github.com/garbin/koapi#readme",
   "dependencies": {
-    "apollo-server-koa": "^1.3.3",
+    "apollo-server-koa": "^2.0.3",
     "bookshelf": "^0.13.3",
     "bookshelf-cascade-delete": "^2.0.0",
     "bookshelf-json-columns": "^2.1.1",
