@@ -42,7 +42,7 @@
   },
   "homepage": "https://github.com/garbin/koapi#readme",
   "dependencies": {
-    "apollo-server-koa": "^2.0.3",
+    "apollo-server-koa": "^2.1.0",
     "bookshelf": "^0.13.3",
     "bookshelf-cascade-delete": "^2.0.0",
     "bookshelf-json-columns": "^2.1.1",
@@ -51,19 +51,19 @@
     "bookshelf-paranoia": "^0.13.0",
     "bookshelf-uuid": "^1.0.0",
     "dataloader": "^1.3.0",
-    "graphql": "^0.13.2",
-    "graphql-iso-date": "^3.3.0",
+    "graphql": "^14.0.2",
+    "graphql-iso-date": "^3.6.1",
     "graphql-parse-fields": "^1.2.0",
     "graphql-relay": "^0.5.3",
     "graphql-request": "^1.4.0",
     "graphql-type-json": "^0.2.0",
-    "http-errors": "^1.7.0",
+    "http-errors": "^1.7.1",
     "isipaddress": "0.0.2",
-    "jest": "^23.5.0",
+    "jest": "^23.6.0",
     "joi": "^13.0.0",
     "kcors": "^2.2.0",
     "knex": "^0.15.2",
-    "koa": "^2.3.0",
+    "koa": "^2.5.3",
     "koa-accesslog": "0.0.2",
     "koa-body": "^4.0.4",
     "koa-compose": "^4.0.0",
@@ -80,16 +80,16 @@
     "koa-ratelimit": "^4.0.0",
     "koa-router": "^7.2.1",
     "koa-static": "^5.0.0",
-    "lodash": "^4.16.6",
+    "lodash": "^4.17.11",
     "moment": "^2.19.1",
     "mysql": "^2.15.0",
     "pluralize": "^7.0.0",
-    "supertest": "^3.0.0",
+    "supertest": "^3.3.0",
     "tldjs": "^2.2.0",
     "ulid": "^2.3.0",
     "wildcard": "^1.1.2",
-    "winston": "^3.0.0",
-    "yargs": "^12.0.1"
+    "winston": "^3.1.0",
+    "yargs": "^12.0.2"
   },
   "bundledDependencies": [
     "graphql-iso-date",
@@ -98,7 +98,7 @@
   "devDependencies": {
     "blueimp-md5": "^2.10.0",
     "graphql-tag": "^2.5.0",
-    "nodemon": "^1.17.2",
+    "nodemon": "^1.18.4",
     "pg": "^7.3.0"
   }
 }
