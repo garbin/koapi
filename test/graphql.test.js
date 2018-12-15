@@ -133,7 +133,7 @@ describe('GraphQL#Query', () => {
   test('query searchByOffset None', async () => {
     await graphql.test(request, `
       query Query {
-        searchByOffset(keyword: "Notexists") {
+        searchByOffset(keyword: "Notexists", filterBy:{tag: "1"}) {
           total
           edges {
             node {
