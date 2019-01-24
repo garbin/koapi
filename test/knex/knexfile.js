@@ -1,10 +1,10 @@
 // Update with your config settings.
 exports.development = exports.production = exports.test = {
   migrations: {
-    directory: './test/knex/migrations'
+    directory: './migrations'
   },
   seeds: {
-    directory: './test/knex/seeds'
+    directory: './seeds'
   },
   // debug: true,
   client: 'postgres',
