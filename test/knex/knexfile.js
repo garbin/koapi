@@ -1,5 +1,11 @@
 // Update with your config settings.
 exports.development = exports.production = exports.test = {
+  migrations: {
+    directory: './migrations'
+  },
+  seeds: {
+    directory: './seeds'
+  },
   // debug: true,
   client: 'postgres',
   connection: {
